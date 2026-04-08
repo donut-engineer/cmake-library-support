@@ -4,7 +4,7 @@ Shared CMake modules for C++ library projects. Provides coverage reporting, vers
 
 ## Authentication
 
-This is a private repository. To allow CMake's FetchContent (or any `git clone` over HTTPS) to authenticate, set a `GH_TOKEN` environment variable and configure Git to use a credential helper.
+This is a private repository. To allow CMake's FetchContent (or any `git clone` over HTTPS) to authenticate, set a `GH_TOKEN` environment variable and configure Git to rewrite GitHub URLs with the token.
 
 ### 1. Set `GH_TOKEN`
 
@@ -12,13 +12,13 @@ This is a private repository. To allow CMake's FetchContent (or any `git clone` 
 export GH_TOKEN="ghp_your_token_here"
 ```
 
-### 2. Configure Git credential helper
+### 2. Configure Git URL rewriting
 
 ```bash
-git config --global credential.helper '!f() { echo "username=x-access-token"; echo "password=${GH_TOKEN}"; }; f'
+git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
 ```
 
-This keeps the token out of URLs entirely. If a clone fails, error messages will only show `https://github.com/...` with no embedded secret — safe for CI logs and terminal output.
+This rewrites all `https://github.com/` URLs to include authentication automatically, so FetchContent and `git clone` work without any changes to the repository URLs themselves.
 
 ## Integration
 
@@ -67,7 +67,7 @@ add_custom_target(generate_version ALL
 
 ### github-release-dependency.cmake
 
-Fetches dependencies from private GitHub release assets using `GH_TOKEN`.
+Fetches dependencies from private GitHub release assets using `GH_TOKEN`. If a download fails, the error log is sanitized so that the token is replaced with `***` — your PAT is never exposed in build output, even on failure.
 
 ```cmake
 include(github-release-dependency)
