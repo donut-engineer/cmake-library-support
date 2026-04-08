@@ -4,7 +4,7 @@
 # Usage (via FetchContent):
 #   include(FetchContent)
 #   FetchContent_Declare(cmake_utilities
-#       GIT_REPOSITORY git@github.com:donut-engineer/cmake-utilities.git
+#       GIT_REPOSITORY https://github.com/donut-engineer/cmake-utilities.git
 #       GIT_TAG main
 #   )
 #   FetchContent_MakeAvailable(cmake_utilities)
