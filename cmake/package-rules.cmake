@@ -14,6 +14,9 @@ function(library_package_rules)
     set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${ARG_DESCRIPTION}")
 
+    # Include architecture in package filename
+    set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+
     # TGZ for Linux, ZIP for Windows
     set(CPACK_GENERATOR "TGZ;ZIP")
 
