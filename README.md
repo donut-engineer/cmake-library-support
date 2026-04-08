@@ -2,6 +2,24 @@
 
 Shared CMake modules for C++ library projects. Provides coverage reporting, version generation, GitHub release dependency fetching, and parameterized install/package/find-module generation.
 
+## Authentication
+
+This is a private repository. To allow CMake's FetchContent (or any `git clone` over HTTPS) to authenticate, set a `GH_TOKEN` environment variable and configure Git to use a credential helper.
+
+### 1. Set `GH_TOKEN`
+
+```bash
+export GH_TOKEN="ghp_your_token_here"
+```
+
+### 2. Configure Git credential helper
+
+```bash
+git config --global credential.helper '!f() { echo "username=x-access-token"; echo "password=${GH_TOKEN}"; }; f'
+```
+
+This keeps the token out of URLs entirely. If a clone fails, error messages will only show `https://github.com/...` with no embedded secret — safe for CI logs and terminal output.
+
 ## Integration
 
 Add to your project via FetchContent:
