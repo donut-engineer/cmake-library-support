@@ -14,33 +14,20 @@ function(library_package_rules)
     set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${ARG_DESCRIPTION}")
 
+    # 1. Force everything into one single archive
+    set(CPACK_MONOLITHIC_INSTALL ON)
+    set(CPACK_ARCHIVE_COMPONENT_INSTALL OFF)
+
     # Include architecture in package filename
     set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
     # TGZ for Linux, ZIP for Windows
     set(CPACK_GENERATOR "TGZ;ZIP")
 
-    # One archive per component
-    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-    set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
-
-    set(CPACK_COMPONENT_STATIC_DISPLAY_NAME "Static Library")
-    set(CPACK_COMPONENT_STATIC_DESCRIPTION
-        "Static library, public headers, and CMake config")
-
-    set(CPACK_COMPONENT_SHARED_DISPLAY_NAME "Shared Library")
-    set(CPACK_COMPONENT_SHARED_DESCRIPTION
-        "Shared library, public headers, and CMake config")
-
-    set(CPACK_COMPONENT_INTERFACE_DISPLAY_NAME "Interface (Header-Only) Library")
-    set(CPACK_COMPONENT_INTERFACE_DESCRIPTION
-        "Public headers and CMake config for header-only use")
-
-    set(CPACK_COMPONENT_DOCS_DISPLAY_NAME "Documentation")
-    set(CPACK_COMPONENT_DOCS_DESCRIPTION
-        "Doxygen HTML API documentation")
-
-    set(CPACK_COMPONENTS_ALL Static Shared Interface)
+    # Optional: If you still want the UI (like a Windows NSIS installer) 
+    # to show checkboxes, you can keep these, but for ZIP/TGZ they are ignored 
+    # now that component install is OFF.
+    set(CPACK_COMPONENTS_ALL Static Shared Interface Docs)
 
     include(CPack)
 endfunction()
