@@ -1,0 +1,90 @@
+# - Try to find the @ModuleName@ library
+# Once done, this will define
+#  @ModuleName@_FOUND - System has @ModuleName@
+#  @ModuleName@_INCLUDE_DIRS - The @ModuleName@ include directories
+#  @ModuleName@_LIBRARIES - The libraries needed to use @ModuleName@
+#  @ModuleName@_DEFINITIONS - Compiler switches required for using @ModuleName@
+
+# Allow the header file name to be set externally
+set(@ModuleName@_HEADER "@ModuleName@.h" CACHE STRING "Header file name for @ModuleName@")
+
+# Use find_path to locate the include directory
+find_path(@ModuleName@_INCLUDE_DIR
+  NAMES ${@ModuleName@_HEADER}
+  PATHS
+    ${CMAKE_PREFIX_PATH}
+    /usr/include
+    /usr/local/include
+)
+
+# Use find_library to locate the shared and static libraries
+find_library(@ModuleName@_SHARED_LIBRARY
+  NAMES @ModuleName@
+  PATHS
+    ${CMAKE_PREFIX_PATH}
+    /usr/lib
+    /usr/local/lib
+)
+
+find_library(@ModuleName@_STATIC_LIBRARY
+  NAMES @ModuleName@_static
+  PATHS
+    ${CMAKE_PREFIX_PATH}
+    /usr/lib
+    /usr/local/lib
+)
+
+# Check if both the include directory and at least one library were found
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(@ModuleName@
+  REQUIRED_VARS @ModuleName@_INCLUDE_DIR
+  VERSION_VAR @ModuleName@_VERSION
+  HANDLE_COMPONENTS)
+
+if(@ModuleName@_FOUND)
+  # Provide imported targets for modern CMake usage
+  if(@ModuleName@_SHARED_LIBRARY)
+    add_library(@ModuleName@::@ModuleName@_SHARED SHARED IMPORTED)
+    set_target_properties(@ModuleName@::@ModuleName@_SHARED PROPERTIES
+      IMPORTED_LOCATION "${@ModuleName@_SHARED_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${@ModuleName@_INCLUDE_DIR}"
+    )
+  endif()
+
+  if(@ModuleName@_STATIC_LIBRARY)
+    add_library(@ModuleName@::@ModuleName@_STATIC STATIC IMPORTED)
+    set_target_properties(@ModuleName@::@ModuleName@_STATIC PROPERTIES
+      IMPORTED_LOCATION "${@ModuleName@_STATIC_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${@ModuleName@_INCLUDE_DIR}"
+    )
+  endif()
+
+  # Always create an interface library
+  add_library(@ModuleName@::@ModuleName@ INTERFACE)
+
+  # Handle SHARED or STATIC preference passed to find_package
+  if(CMAKE_FIND_PACKAGE_PREFER AND CMAKE_FIND_PACKAGE_PREFER STREQUAL "SHARED")
+    if(@ModuleName@_SHARED_LIBRARY)
+      target_link_libraries(@ModuleName@::@ModuleName@ INTERFACE @ModuleName@::@ModuleName@_SHARED)
+    else()
+      message(FATAL_ERROR "Shared library for @ModuleName@ not found, but SHARED was requested.")
+    endif()
+  elseif(CMAKE_FIND_PACKAGE_PREFER AND CMAKE_FIND_PACKAGE_PREFER STREQUAL "STATIC")
+    if(@ModuleName@_STATIC_LIBRARY)
+      target_link_libraries(@ModuleName@::@ModuleName@ INTERFACE @ModuleName@::@ModuleName@_STATIC)
+    else()
+      message(FATAL_ERROR "Static library for @ModuleName@ not found, but STATIC was requested.")
+    endif()
+  else()
+    # Default behavior: prefer static if both are available
+    if(@ModuleName@_SHARED_LIBRARY AND @ModuleName@_STATIC_LIBRARY)
+      target_link_libraries(@ModuleName@::@ModuleName@ INTERFACE @ModuleName@::@ModuleName@_STATIC)
+    elseif(@ModuleName@_SHARED_LIBRARY)
+      target_link_libraries(@ModuleName@::@ModuleName@ INTERFACE @ModuleName@::@ModuleName@_SHARED)
+    elseif(@ModuleName@_STATIC_LIBRARY)
+      target_link_libraries(@ModuleName@::@ModuleName@ INTERFACE @ModuleName@::@ModuleName@_STATIC)
+    endif()
+  endif()
+endif()
+
+mark_as_advanced(@ModuleName@_INCLUDE_DIR @ModuleName@_SHARED_LIBRARY @ModuleName@_STATIC_LIBRARY)
