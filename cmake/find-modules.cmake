@@ -2,179 +2,95 @@
 # These are installed alongside the library so downstream consumers can use
 # module-mode find_package().
 
-# Generates a FindXxxStatic.cmake module for a static library.
+# Generates a FindXxx.cmake module for a library.
 #
 # Required arguments:
-#   MODULE_NAME  — find-module name without "Find" prefix (e.g. "BehaviorTreeStatic")
+#   MODULE_NAME  — find-module name without "Find" prefix (e.g. "BehaviorTree")
 #   NAMESPACE    — CMake namespace for the imported target (e.g. "BehaviorTree")
 #   TARGET_NAME  — imported target name without namespace (e.g. "behaviorTree")
-#   HEADER_NAME  — header path to locate via find_path (e.g. "behaviorTree/iNode.hpp")
+#   HEADER_NAME  — header path to locate via find_path (optional, e.g. "behaviorTree/iNode.hpp")
 #   PACKAGE_DOC  — human-readable package name for docs (e.g. "behavior-tree")
-function(generate_find_static_module)
+function(generate_find_module)
     cmake_parse_arguments(ARG "" "MODULE_NAME;NAMESPACE;TARGET_NAME;HEADER_NAME;PACKAGE_DOC" "" ${ARGN})
 
-    if(NOT ARG_MODULE_NAME OR NOT ARG_NAMESPACE OR NOT ARG_TARGET_NAME OR NOT ARG_HEADER_NAME OR NOT ARG_PACKAGE_DOC)
-        message(FATAL_ERROR "generate_find_static_module requires MODULE_NAME, NAMESPACE, TARGET_NAME, HEADER_NAME, and PACKAGE_DOC")
+    if(NOT ARG_MODULE_NAME OR NOT ARG_NAMESPACE OR NOT ARG_TARGET_NAME OR NOT ARG_PACKAGE_DOC)
+        message(FATAL_ERROR "generate_find_module requires MODULE_NAME, NAMESPACE, TARGET_NAME, HEADER_NAME (optional), and PACKAGE_DOC")
     endif()
 
     set(_out "${PROJECT_BINARY_DIR}/cmake/Find${ARG_MODULE_NAME}.cmake")
 
-    file(WRITE "${_out}"
-"# Find${ARG_MODULE_NAME}.cmake
-# ----------------------------
-# Finds the ${ARG_PACKAGE_DOC} static library.
-#
-# Imported targets:
-#   ${ARG_NAMESPACE}::${ARG_TARGET_NAME} - static library
-#
-# Cache variables:
-#   ${ARG_MODULE_NAME}_INCLUDE_DIR - directory containing ${ARG_HEADER_NAME}
-#   ${ARG_MODULE_NAME}_LIBRARY     - path to lib${ARG_TARGET_NAME}.a
+    # Write the FindModule.cmake file directly
+    file(WRITE "${_out}" "# - Try to find the ${ARG_MODULE_NAME} library\n")
+    file(APPEND "${_out}" "# Once done, this will define\n")
+    file(APPEND "${_out}" "#  ${ARG_MODULE_NAME}_FOUND - System has ${ARG_MODULE_NAME}\n")
+    file(APPEND "${_out}" "#  ${ARG_MODULE_NAME}_INCLUDE_DIRS - The ${ARG_MODULE_NAME} include directories\n")
+    file(APPEND "${_out}" "#  ${ARG_MODULE_NAME}_LIBRARIES - The libraries needed to use ${ARG_MODULE_NAME}\n")
+    file(APPEND "${_out}" "#  ${ARG_MODULE_NAME}_DEFINITIONS - Compiler switches required for using ${ARG_MODULE_NAME}\n\n")
 
-cmake_minimum_required(VERSION 3.25)
-
-find_path(${ARG_MODULE_NAME}_INCLUDE_DIR
-    NAMES ${ARG_HEADER_NAME}
-    DOC   \"${ARG_PACKAGE_DOC} include directory\"
-)
-
-find_library(${ARG_MODULE_NAME}_LIBRARY
-    NAMES ${ARG_TARGET_NAME}
-    DOC   \"${ARG_PACKAGE_DOC} static library\"
-)
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(${ARG_MODULE_NAME}
-    REQUIRED_VARS
-        ${ARG_MODULE_NAME}_INCLUDE_DIR
-        ${ARG_MODULE_NAME}_LIBRARY
-)
-
-if(${ARG_MODULE_NAME}_FOUND AND NOT TARGET ${ARG_NAMESPACE}::${ARG_TARGET_NAME})
-    add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME} STATIC IMPORTED)
-    set_target_properties(${ARG_NAMESPACE}::${ARG_TARGET_NAME} PROPERTIES
-        IMPORTED_LOCATION             \"\${${ARG_MODULE_NAME}_LIBRARY}\"
-        INTERFACE_INCLUDE_DIRECTORIES \"\${${ARG_MODULE_NAME}_INCLUDE_DIR}\"
-    )
-endif()
-
-mark_as_advanced(
-    ${ARG_MODULE_NAME}_INCLUDE_DIR
-    ${ARG_MODULE_NAME}_LIBRARY
-)
-")
-endfunction()
-
-# Generates a FindXxxShared.cmake module for a shared library.
-#
-# Required arguments:
-#   MODULE_NAME  — find-module name without "Find" prefix (e.g. "BehaviorTreeShared")
-#   NAMESPACE    — CMake namespace for the imported target (e.g. "BehaviorTree")
-#   TARGET_NAME  — imported target name without namespace (e.g. "behaviorTreeShared")
-#   HEADER_NAME  — header path to locate via find_path (e.g. "behaviorTree/iNode.hpp")
-#   PACKAGE_DOC  — human-readable package name for docs (e.g. "behavior-tree")
-function(generate_find_shared_module)
-    cmake_parse_arguments(ARG "" "MODULE_NAME;NAMESPACE;TARGET_NAME;HEADER_NAME;PACKAGE_DOC" "" ${ARGN})
-
-    if(NOT ARG_MODULE_NAME OR NOT ARG_NAMESPACE OR NOT ARG_TARGET_NAME OR NOT ARG_HEADER_NAME OR NOT ARG_PACKAGE_DOC)
-        message(FATAL_ERROR "generate_find_shared_module requires MODULE_NAME, NAMESPACE, TARGET_NAME, HEADER_NAME, and PACKAGE_DOC")
+    if(ARG_HEADER_NAME)
+        file(APPEND "${_out}" "find_path(${ARG_MODULE_NAME}_INCLUDE_DIR\n")
+        file(APPEND "${_out}" "  NAMES ${ARG_HEADER_NAME}\n")
+        file(APPEND "${_out}" "  PATHS\n")
+        file(APPEND "${_out}" "    \${CMAKE_PREFIX_PATH}\n")
+        file(APPEND "${_out}" "    /usr/include\n")
+        file(APPEND "${_out}" "    /usr/local/include\n")
+        file(APPEND "${_out}" ")\n\n")
     endif()
 
-    set(_out "${PROJECT_BINARY_DIR}/cmake/Find${ARG_MODULE_NAME}.cmake")
+    file(APPEND "${_out}" "find_library(${ARG_MODULE_NAME}_SHARED_LIBRARY\n")
+    file(APPEND "${_out}" "  NAMES ${ARG_TARGET_NAME}\n")
+    file(APPEND "${_out}" "  PATHS\n")
+    file(APPEND "${_out}" "    \${CMAKE_PREFIX_PATH}\n")
+    file(APPEND "${_out}" "    /usr/lib\n")
+    file(APPEND "${_out}" "    /usr/local/lib\n")
+    file(APPEND "${_out}" ")\n\n")
 
-    file(WRITE "${_out}"
-"# Find${ARG_MODULE_NAME}.cmake
-# ----------------------------
-# Finds the ${ARG_PACKAGE_DOC} shared library.
-#
-# Imported targets:
-#   ${ARG_NAMESPACE}::${ARG_TARGET_NAME} - shared library
-#
-# Cache variables:
-#   ${ARG_MODULE_NAME}_INCLUDE_DIR - directory containing ${ARG_HEADER_NAME}
-#   ${ARG_MODULE_NAME}_LIBRARY     - path to lib${ARG_TARGET_NAME}.so
+    file(APPEND "${_out}" "find_library(${ARG_MODULE_NAME}_STATIC_LIBRARY\n")
+    file(APPEND "${_out}" "  NAMES ${ARG_TARGET_NAME}_static\n")
+    file(APPEND "${_out}" "  PATHS\n")
+    file(APPEND "${_out}" "    \${CMAKE_PREFIX_PATH}\n")
+    file(APPEND "${_out}" "    /usr/lib\n")
+    file(APPEND "${_out}" "    /usr/local/lib\n")
+    file(APPEND "${_out}" ")\n\n")
 
-cmake_minimum_required(VERSION 3.25)
+    file(APPEND "${_out}" "include(FindPackageHandleStandardArgs)\n")
+    file(APPEND "${_out}" "find_package_handle_standard_args(${ARG_MODULE_NAME}\n")
+    file(APPEND "${_out}" "  REQUIRED_VARS ${ARG_MODULE_NAME}_INCLUDE_DIR\n")
+    file(APPEND "${_out}" "  VERSION_VAR ${ARG_MODULE_NAME}_VERSION\n")
+    file(APPEND "${_out}" ")\n\n")
 
-find_path(${ARG_MODULE_NAME}_INCLUDE_DIR
-    NAMES ${ARG_HEADER_NAME}
-    DOC   \"${ARG_PACKAGE_DOC} include directory\"
-)
+    file(APPEND "${_out}" "if(${ARG_MODULE_NAME}_FOUND)\n")
+    file(APPEND "${_out}" "  if(${ARG_MODULE_NAME}_SHARED_LIBRARY)\n")
+    file(APPEND "${_out}" "    add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME}_SHARED SHARED IMPORTED)\n")
+    file(APPEND "${_out}" "    set_target_properties(${ARG_NAMESPACE}::${ARG_TARGET_NAME}_SHARED PROPERTIES\n")
+    file(APPEND "${_out}" "      IMPORTED_LOCATION \${${ARG_MODULE_NAME}_SHARED_LIBRARY}\n")
+    file(APPEND "${_out}" "      INTERFACE_INCLUDE_DIRECTORIES \${${ARG_MODULE_NAME}_INCLUDE_DIR}\n")
+    file(APPEND "${_out}" "    )\n")
+    file(APPEND "${_out}" "  endif()\n\n")
 
-find_library(${ARG_MODULE_NAME}_LIBRARY
-    NAMES ${ARG_TARGET_NAME}
-    DOC   \"${ARG_PACKAGE_DOC} shared library\"
-)
+    file(APPEND "${_out}" "  if(${ARG_MODULE_NAME}_STATIC_LIBRARY)\n")
+    file(APPEND "${_out}" "    add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME}_STATIC STATIC IMPORTED)\n")
+    file(APPEND "${_out}" "    set_target_properties(${ARG_NAMESPACE}::${ARG_TARGET_NAME}_STATIC PROPERTIES\n")
+    file(APPEND "${_out}" "      IMPORTED_LOCATION \${${ARG_MODULE_NAME}_STATIC_LIBRARY}\n")
+    file(APPEND "${_out}" "      INTERFACE_INCLUDE_DIRECTORIES \${${ARG_MODULE_NAME}_INCLUDE_DIR}\n")
+    file(APPEND "${_out}" "    )\n")
+    file(APPEND "${_out}" "  endif()\n\n")
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(${ARG_MODULE_NAME}
-    REQUIRED_VARS
-        ${ARG_MODULE_NAME}_INCLUDE_DIR
-        ${ARG_MODULE_NAME}_LIBRARY
-)
-
-if(${ARG_MODULE_NAME}_FOUND AND NOT TARGET ${ARG_NAMESPACE}::${ARG_TARGET_NAME})
-    add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME} SHARED IMPORTED)
-    set_target_properties(${ARG_NAMESPACE}::${ARG_TARGET_NAME} PROPERTIES
-        IMPORTED_LOCATION             \"\${${ARG_MODULE_NAME}_LIBRARY}\"
-        INTERFACE_INCLUDE_DIRECTORIES \"\${${ARG_MODULE_NAME}_INCLUDE_DIR}\"
-    )
-endif()
-
-mark_as_advanced(
-    ${ARG_MODULE_NAME}_INCLUDE_DIR
-    ${ARG_MODULE_NAME}_LIBRARY
-)
-")
-endfunction()
-
-# Generates a FindXxxInterface.cmake module for a header-only library.
-#
-# Required arguments:
-#   MODULE_NAME  — find-module name without "Find" prefix (e.g. "BehaviorTreeInterface")
-#   NAMESPACE    — CMake namespace for the imported target (e.g. "BehaviorTree")
-#   TARGET_NAME  — imported target name without namespace (e.g. "behaviorTreeInterface")
-#   HEADER_NAME  — header path to locate via find_path (e.g. "behaviorTree/iNode.hpp")
-#   PACKAGE_DOC  — human-readable package name for docs (e.g. "behavior-tree")
-function(generate_find_interface_module)
-    cmake_parse_arguments(ARG "" "MODULE_NAME;NAMESPACE;TARGET_NAME;HEADER_NAME;PACKAGE_DOC" "" ${ARGN})
-
-    if(NOT ARG_MODULE_NAME OR NOT ARG_NAMESPACE OR NOT ARG_TARGET_NAME OR NOT ARG_HEADER_NAME OR NOT ARG_PACKAGE_DOC)
-        message(FATAL_ERROR "generate_find_interface_module requires MODULE_NAME, NAMESPACE, TARGET_NAME, HEADER_NAME, and PACKAGE_DOC")
-    endif()
-
-    set(_out "${PROJECT_BINARY_DIR}/cmake/Find${ARG_MODULE_NAME}.cmake")
-
-    file(WRITE "${_out}"
-"# Find${ARG_MODULE_NAME}.cmake
-# --------------------------------
-# Finds the ${ARG_PACKAGE_DOC} header-only interface library.
-#
-# Imported targets:
-#   ${ARG_NAMESPACE}::${ARG_TARGET_NAME} - interface (header-only) library
-#
-# Cache variables:
-#   ${ARG_MODULE_NAME}_INCLUDE_DIR - directory containing ${ARG_HEADER_NAME}
-
-cmake_minimum_required(VERSION 3.25)
-
-find_path(${ARG_MODULE_NAME}_INCLUDE_DIR
-    NAMES ${ARG_HEADER_NAME}
-    DOC   \"${ARG_PACKAGE_DOC} include directory\"
-)
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(${ARG_MODULE_NAME}
-    REQUIRED_VARS ${ARG_MODULE_NAME}_INCLUDE_DIR
-)
-
-if(${ARG_MODULE_NAME}_FOUND AND NOT TARGET ${ARG_NAMESPACE}::${ARG_TARGET_NAME})
-    add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE IMPORTED)
-    set_target_properties(${ARG_NAMESPACE}::${ARG_TARGET_NAME} PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES \"\${${ARG_MODULE_NAME}_INCLUDE_DIR}\"
-    )
-endif()
-
-mark_as_advanced(${ARG_MODULE_NAME}_INCLUDE_DIR)
-")
+    file(APPEND "${_out}" "  add_library(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE)\n")
+    file(APPEND "${_out}" "  if(${ARG_MODULE_NAME}_SHARED_LIBRARY AND ${ARG_MODULE_NAME}_STATIC_LIBRARY)\n")
+    file(APPEND "${_out}" "    if(NOT DEFINED ${ARG_MODULE_NAME}_LIBRARY_TYPE)\n")
+    file(APPEND "${_out}" "      set(${ARG_MODULE_NAME}_LIBRARY_TYPE "STATIC" CACHE STRING \"Library type for ${ARG_MODULE_NAME} (SHARED or STATIC)\")\n")
+    file(APPEND "${_out}" "      set_property(CACHE ${ARG_MODULE_NAME}_LIBRARY_TYPE PROPERTY STRINGS SHARED STATIC)\n")
+    file(APPEND "${_out}" "    endif()\n")
+    file(APPEND "${_out}" "    if(${ARG_MODULE_NAME}_LIBRARY_TYPE STREQUAL "STATIC")\n")
+    file(APPEND "${_out}" "      target_link_libraries(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE ${ARG_NAMESPACE}::${ARG_TARGET_NAME}_STATIC)\n")
+    file(APPEND "${_out}" "    else()\n")
+    file(APPEND "${_out}" "      target_link_libraries(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE ${ARG_NAMESPACE}::${ARG_TARGET_NAME}_SHARED)\n")
+    file(APPEND "${_out}" "    endif()\n")
+    file(APPEND "${_out}" "  elseif(${ARG_MODULE_NAME}_SHARED_LIBRARY)\n")
+    file(APPEND "${_out}" "    target_link_libraries(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE ${ARG_NAMESPACE}::${ARG_TARGET_NAME}_SHARED)\n")
+    file(APPEND "${_out}" "  elseif(${ARG_MODULE_NAME}_STATIC_LIBRARY)\n")
+    file(APPEND "${_out}" "    target_link_libraries(${ARG_NAMESPACE}::${ARG_TARGET_NAME} INTERFACE ${ARG_NAMESPACE}::${ARG_TARGET_NAME}_STATIC)\n")
+    file(APPEND "${_out}" "  endif()\n")
+    file(APPEND "${_out}" "endif()\n")
 endfunction()
