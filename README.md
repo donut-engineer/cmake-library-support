@@ -80,6 +80,34 @@ github_release_dependency(
 )
 ```
 
+#### Finding a release asset ID
+
+The `ASSET_URL` requires the numeric asset ID. Use the `gh` CLI to look it up:
+
+```bash
+# List all assets for a release tagged "v1.0.0"
+gh release view v1.0.0 --repo owner/repo --json assets --jq '.assets[] | {name, id, url}'
+```
+
+Example output:
+
+```json
+{
+  "name": "behavior-tree-1.0.0-Linux-x86_64.tar.gz",
+  "id": 12345,
+  "url": "https://api.github.com/repos/owner/repo/releases/assets/12345"
+}
+```
+
+If you only need the asset ID for a specific file:
+
+```bash
+gh release view v1.0.0 --repo owner/repo --json assets \
+  --jq '.assets[] | select(.name == "behavior-tree-1.0.0-Linux-x86_64.tar.gz") | .id'
+```
+
+Use the `url` value (or construct it from the `id`) as the `ASSET_URL` parameter.
+
 ### find-modules.cmake
 
 Generates `Find*.cmake` modules at configure time for downstream module-mode `find_package()`.
