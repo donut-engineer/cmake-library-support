@@ -1,8 +1,8 @@
-# cmake-utilities
+# cmake-library-support
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Shared CMake modules for C++ library projects. Provides coverage reporting, version generation, GitHub release dependency fetching, and parameterized install/package/find-module generation.
+CMake modules for authoring and distributing C++ libraries. Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package/find-module generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
 ## Requirements
 
@@ -15,12 +15,12 @@ Add to your project via FetchContent:
 
 ```cmake
 include(FetchContent)
-FetchContent_Declare(cmake_utilities
+FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/tcarter690/cmake-utilities.git
     GIT_TAG v1.0.0
 )
-FetchContent_MakeAvailable(cmake_utilities)
-include(${cmake_utilities_SOURCE_DIR}/cmake/cmake-utilities.cmake)
+FetchContent_MakeAvailable(cmake_library_support)
+include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
 ```
 
 ## Modules
@@ -60,7 +60,7 @@ add_custom_target(generate_version ALL
         -D VERSION_PATCH=${PROJECT_VERSION_PATCH}
         -D TEMPLATE=${CMAKE_SOURCE_DIR}/include/myLib/version.hpp.in
         -D OUTPUT=${CMAKE_BINARY_DIR}/include/myLib/version.hpp
-        -P ${CMAKE_UTILITIES_DIR}/generate-version.cmake
+        -P ${CMAKE_LIBRARY_SUPPORT_DIR}/generate-version.cmake
     COMMENT "Generating version header"
 )
 ```
