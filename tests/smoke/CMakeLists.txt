@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.21)
 project(cmake-utilities-smoke VERSION 1.0.0 LANGUAGES NONE)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/cmake-utilities.cmake)
-include(find-modules)
 include(config-template)
 include(package-rules)
 
@@ -10,19 +9,6 @@ include(package-rules)
 # no language is enabled; set a sensible default to suppress the warning.
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE PATH "")
 include(install-rules)
-
-# --- generate_find_module ---
-generate_find_module(
-    MODULE_NAME "Smoke"
-    NAMESPACE   "Smoke"
-    TARGET_NAME "smoke"
-    PACKAGE_DOC "smoke-lib"
-    HEADER_NAME "smoke/api.hpp"
-)
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/cmake/FindSmoke.cmake")
-    message(FATAL_ERROR "generate_find_module did not create FindSmoke.cmake")
-endif()
-message(STATUS "PASS: generate_find_module")
 
 # --- generate_config_template (must precede library_install_rules) ---
 generate_config_template(PACKAGE_NAME "smoke-lib")
