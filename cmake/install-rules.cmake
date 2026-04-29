@@ -23,7 +23,9 @@ function(library_install_rules)
     set(_pkg "${ARG_PACKAGE_NAME}")
     set(_ns "${ARG_NAMESPACE}")
 
-    # Override the default CMAKE_INSTALL_DOCDIR to match the package name convention.
+    # GNUInstallDirs sets CMAKE_INSTALL_DOCDIR to "share/doc/<PROJECT_NAME>", which uses the
+    # CMake project name rather than our kebab-case package name. Override it here so the
+    # installed docs land under the correct path (e.g. share/doc/behavior-tree).
     set(CMAKE_INSTALL_DOCDIR "share/doc/${_pkg}")
 
     # Install static library target
@@ -54,7 +56,6 @@ function(library_install_rules)
         TARGETS ${ARG_INTERFACE_TARGET}
         EXPORT ${_pkg}-interface-targets
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        COMPONENT Interface
     )
 
     # Install public headers for each component
