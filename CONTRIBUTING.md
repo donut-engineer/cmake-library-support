@@ -29,7 +29,7 @@ There is no automated test suite. Before submitting a PR, manually verify your m
 
 ## Commit messages
 
-- Imperative mood, short subject line (≤ 72 chars): `Add header discovery to find-modules`
+- Imperative mood, short subject line (≤ 72 chars): `Add SameMajorVersion compatibility to install-rules`
 - Reference any related issue in the commit body.
 
 ## License
