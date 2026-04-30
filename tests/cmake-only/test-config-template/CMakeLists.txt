@@ -13,15 +13,7 @@ if(NOT EXISTS "${_out}")
 endif()
 
 file(READ "${_out}" _content)
-
-foreach(_pattern
-  "@PACKAGE_INIT@"
-  "my-library-static-targets.cmake"
-  "my-library-shared-targets.cmake"
-  "my-library-interface-targets.cmake"
-  "check_required_components\\(my-library\\)"
-)
-  if(NOT _content MATCHES "${_pattern}")
-    message(FATAL_ERROR "Expected pattern not found in my-library-config.cmake.in: ${_pattern}")
-  endif()
-endforeach()
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/expected-my-library-config.cmake.in" _expected)
+if(NOT _content STREQUAL _expected)
+  message(FATAL_ERROR "Generated my-library-config.cmake.in does not match expected content")
+endif()
