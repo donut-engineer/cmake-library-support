@@ -1,5 +1,6 @@
 # cmake-library-support
 
+[![CI](https://github.com/tcarter690/cmake-utilities/actions/workflows/ci.yml/badge.svg)](https://github.com/tcarter690/cmake-utilities/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 CMake modules for authoring and distributing C++ libraries. Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package/find-module generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.

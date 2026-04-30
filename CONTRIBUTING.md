@@ -25,7 +25,23 @@ Only modules that serve a C++ library author's build and release pipeline belong
 
 ## Testing
 
-There is no automated test suite. Before submitting a PR, manually verify your module works correctly when consumed by a real CMake project via `FetchContent`. Document the test scenario in your PR description.
+The repo has an automated test suite split into two layers:
+
+- **Pure CMake tests** (`cmake-only` label): validate module logic without a compiler. Run anywhere CMake is available.
+- **Integration tests**: build and test a real C++ library using the modules. Requires Clang and LLVM 18.
+
+To run locally:
+
+```bash
+# Pure CMake tests only (no compiler required)
+cmake -S tests -B tests/build -DMODULES_DIR=$(pwd)/cmake
+ctest --test-dir tests/build -L cmake-only --output-on-failure
+
+# Full suite (requires clang + llvm-18)
+ctest --test-dir tests/build --output-on-failure
+```
+
+Before submitting a PR, ensure both layers pass. If your change affects a module not covered by the existing suite, document a manual verification scenario in your PR description.
 
 ## Commit messages
 
