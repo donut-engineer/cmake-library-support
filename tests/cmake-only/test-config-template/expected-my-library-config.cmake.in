@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/my-library-static-targets.cmake" OPTIONAL)
+include("${CMAKE_CURRENT_LIST_DIR}/my-library-shared-targets.cmake" OPTIONAL)
+include("${CMAKE_CURRENT_LIST_DIR}/my-library-interface-targets.cmake" OPTIONAL)
+
+check_required_components(my-library)
