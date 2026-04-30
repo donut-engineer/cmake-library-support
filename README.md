@@ -16,7 +16,7 @@ Add to your project via FetchContent:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
-    GIT_REPOSITORY https://github.com/tcarter690/cmake-utilities.git
+    GIT_REPOSITORY https://github.com/tcarter690/cmake-library-support.git
     GIT_TAG v1.0.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
