@@ -36,12 +36,46 @@ endif()
 
 file(READ "${OUTPUT}" _content)
 
-# The version should contain 2.5.0 (with an appended commit hash on non-release branches)
-if(NOT _content MATCHES "2\\.5\\.0")
-  message(FATAL_ERROR "Version '2.5.0' not found in generated output:\n${_content}")
-endif()
-
 # @VERSION_FULL@ placeholder must have been substituted (not left as-is)
 if(_content MATCHES "@VERSION_FULL@")
   message(FATAL_ERROR "@VERSION_FULL@ was not substituted in output:\n${_content}")
+endif()
+
+# Determine expected version string the same way generate-version.cmake does
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  OUTPUT_VARIABLE _branch
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  WORKING_DIRECTORY "${SOURCE_DIR}"
+  ERROR_QUIET
+)
+if(_branch STREQUAL "release")
+  set(_expected_version "2.5.0")
+else()
+  execute_process(
+    COMMAND git rev-parse --short HEAD
+    OUTPUT_VARIABLE _commit
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    WORKING_DIRECTORY "${SOURCE_DIR}"
+    ERROR_QUIET
+  )
+  if(NOT _commit)
+    set(_commit "unknown")
+  endif()
+  execute_process(
+    COMMAND git status --porcelain
+    OUTPUT_VARIABLE _status
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    WORKING_DIRECTORY "${SOURCE_DIR}"
+    ERROR_QUIET
+  )
+  if(_status STREQUAL "")
+    set(_expected_version "2.5.0-${_commit}")
+  else()
+    set(_expected_version "2.5.0-${_commit}-dirty")
+  endif()
+endif()
+
+if(NOT _content MATCHES "${_expected_version}")
+  message(FATAL_ERROR "Expected version '${_expected_version}' not found in generated output:\n${_content}")
 endif()
