@@ -123,27 +123,6 @@ gh release view v1.0.0 --repo owner/repo --json assets \
 
 Use the `url` value (or construct it from the `id`) as the `ASSET_URL` parameter.
 
-### find-modules.cmake
-
-Generates a `Find<Name>.cmake` module at configure time for downstream module-mode
-`find_package()`. The generated module creates separate `SHARED` and `STATIC` imported
-targets as well as a selector interface target controlled by a `<Name>_LIBRARY_TYPE`
-cache variable.
-
-```cmake
-include(find-modules)
-generate_find_module(
-    MODULE_NAME "MyLibrary"
-    NAMESPACE "MyLibrary"
-    TARGET_NAME "myLibrary"
-    HEADER_NAME "myLibrary/myLibrary.hpp"   # optional
-    PACKAGE_DOC "my-library"
-)
-```
-
-`HEADER_NAME` is optional. When omitted, header discovery is skipped and only the
-libraries are searched for.
-
 ### config-template.cmake
 
 Generates the `*-config.cmake.in` template consumed by `configure_package_config_file()`
@@ -157,7 +136,7 @@ generate_config_template(PACKAGE_NAME "my-library")
 ### install-rules.cmake
 
 Installs static, shared, and interface library targets with proper CMake export sets,
-config-mode package files, find modules, and optional Doxygen documentation.
+config-mode package files, and optional Doxygen documentation.
 
 ```cmake
 include(install-rules)
