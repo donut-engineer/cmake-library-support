@@ -12,7 +12,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
 include(cmake-library-support)
-include(find-modules)
 include(config-template)
 include(install-rules)
 
@@ -32,15 +31,6 @@ target_include_directories(mylibIface INTERFACE
 
 # config-template must run before install-rules (it creates the .cmake.in file)
 generate_config_template(PACKAGE_NAME "mylib")
-
-# Exercise find-modules.cmake
-generate_find_module(
-  MODULE_NAME  Mylib
-  NAMESPACE    mylib
-  TARGET_NAME  mylib
-  HEADER_NAME  "mylib/mylib.hpp"
-  PACKAGE_DOC  "mylib"
-)
 
 # Exercise install-rules.cmake (registers install rules, calls configure_package_config_file)
 library_install_rules(
