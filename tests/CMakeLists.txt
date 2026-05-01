@@ -41,7 +41,9 @@ add_test(
     "-DTEST_DIR=${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-generate-version"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-generate-version/run_test.cmake"
 )
-set_tests_properties(generate-version PROPERTIES TIMEOUT 30 LABELS cmake-only)
+set_tests_properties(generate-version PROPERTIES
+  TIMEOUT 30
+  LABELS  cmake-only)
 
 # ---------------------------------------------------------------------------
 # Integration tests (require clang + LLVM 18)
@@ -57,37 +59,39 @@ add_test(
     -DCMAKE_C_COMPILER=clang
     -DCMAKE_CXX_COMPILER=clang++
 )
+set_tests_properties(integration-configure PROPERTIES
+  FIXTURES_SETUP mylib_configured
+  TIMEOUT        120
+  LABELS         integration)
+
 add_test(
   NAME integration-build
   COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/mylib-build" --parallel
 )
+set_tests_properties(integration-build PROPERTIES
+  FIXTURES_REQUIRED mylib_configured
+  FIXTURES_SETUP    mylib_built
+  TIMEOUT           300
+  LABELS            integration)
+
 add_test(
   NAME integration-test
   COMMAND ${CMAKE_CTEST_COMMAND}
     --test-dir "${CMAKE_BINARY_DIR}/mylib-build"
     --output-on-failure
 )
+set_tests_properties(integration-test PROPERTIES
+  FIXTURES_REQUIRED mylib_built
+  FIXTURES_SETUP    mylib_tested
+  TIMEOUT           120
+  LABELS            integration)
+
 add_test(
   NAME integration-coverage
   COMMAND ${CMAKE_COMMAND}
     --build "${CMAKE_BINARY_DIR}/mylib-build"
     --target coverage
 )
-
-set_tests_properties(integration-configure PROPERTIES
-  FIXTURES_SETUP    mylib_configured
-  TIMEOUT           120
-  LABELS            integration)
-set_tests_properties(integration-build PROPERTIES
-  FIXTURES_REQUIRED mylib_configured
-  FIXTURES_SETUP    mylib_built
-  TIMEOUT           300
-  LABELS            integration)
-set_tests_properties(integration-test PROPERTIES
-  FIXTURES_REQUIRED mylib_built
-  FIXTURES_SETUP    mylib_tested
-  TIMEOUT           120
-  LABELS            integration)
 set_tests_properties(integration-coverage PROPERTIES
   FIXTURES_REQUIRED mylib_tested
   TIMEOUT           120
