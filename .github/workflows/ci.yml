@@ -4,12 +4,12 @@ on:
   push:
     branches: [develop, release]
   pull_request:
-    branches: [develop, release]
+    branches: ['**']
 
 jobs:
   cmake-only-tests:
     name: Pure CMake Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -23,16 +23,12 @@ jobs:
 
   integration-tests:
     name: Integration Tests (Clang + LLVM 18)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Install LLVM 18
         run: |
-          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key \
-            | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-18 main" \
-            | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update -q
           sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev
           sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-18   100
@@ -52,4 +48,4 @@ jobs:
         with:
           name: coverage-html
           path: tests/build/mylib-build/coverage/html/
-          if-no-files-found: ignore
+          if-no-files-found: error
