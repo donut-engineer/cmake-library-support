@@ -1,7 +1,11 @@
 # Adds Clang source-based coverage compile and link flags to the given target
-function(target_enable_coverage target)
-    target_compile_options(${target} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
-    target_link_options(${target} PRIVATE -fprofile-instr-generate)
+function(target_enable_coverage)
+    cmake_parse_arguments(ARG "" "TARGET" "" ${ARGN})
+    if(NOT ARG_TARGET)
+        message(FATAL_ERROR "target_enable_coverage: TARGET is required")
+    endif()
+    target_compile_options(${ARG_TARGET} PRIVATE -fprofile-instr-generate -fcoverage-mapping)
+    target_link_options(${ARG_TARGET} PRIVATE -fprofile-instr-generate)
 endfunction()
 
 # Creates a 'coverage' custom target that:
