@@ -70,6 +70,11 @@ function(library_install_rules)
         )
     endif()
 
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/include")
+        message(WARNING "library_install_rules: no include/ directory found at "
+            "'${PROJECT_SOURCE_DIR}/include' — no public headers will be installed")
+    endif()
+
     # Install public headers for each active component
     foreach(_comp Static Shared Interface)
         string(TOUPPER "${_comp}" _comp_upper)
