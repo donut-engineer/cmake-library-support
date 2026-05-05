@@ -15,7 +15,7 @@ add_executable(test_mylib test_mylib.cpp)
 target_link_libraries(test_mylib PRIVATE mylib GTest::gtest_main)
 
 # Exercise target_enable_coverage (adds -fprofile-instr-generate -fcoverage-mapping)
-target_enable_coverage(test_mylib)
+target_enable_coverage(TARGET test_mylib)
 
 gtest_discover_tests(test_mylib)
 
