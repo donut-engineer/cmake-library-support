@@ -10,6 +10,10 @@
 #   FetchContent_MakeAvailable(cmake_library_support)
 #   include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
 
+if(CMAKE_VERSION VERSION_LESS "3.15")
+    message(FATAL_ERROR "cmake-library-support requires CMake 3.15 or higher (found ${CMAKE_VERSION})")
+endif()
+
 set(CMAKE_LIBRARY_SUPPORT_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL
     "Path to cmake-library-support cmake/ directory")
 

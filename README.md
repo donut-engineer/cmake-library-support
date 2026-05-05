@@ -6,7 +6,7 @@ CMake modules for authoring and distributing C++ libraries. Every module in this
 
 ## Requirements
 
-- CMake 3.14+
+- CMake 3.15+
 - Clang + LLVM toolchain (for `coverage.cmake`, Linux/macOS only)
 
 ## Integration
