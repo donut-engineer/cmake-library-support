@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.0] - 2026-04-23
-
 ### Added
 - `generate_config_template()` now accepts `STATIC`, `SHARED`, and `INTERFACE` flags to
   control which target includes are emitted in the generated config template. Defaults to
@@ -16,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `library_install_rules()` now treats `STATIC_TARGET`, `SHARED_TARGET`, and
   `INTERFACE_TARGET` as optional — each install block activates only when its corresponding
   argument is provided. At least one must still be specified.
+
+## [1.2.0] - 2026-04-23
+
+### Added
 - Documentation for looking up GitHub release asset IDs using the `gh` CLI.
 
 ## [1.1.0] - 2026-04-09
