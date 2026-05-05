@@ -17,7 +17,7 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v1.2.0
+    GIT_TAG v2.0.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
 include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
