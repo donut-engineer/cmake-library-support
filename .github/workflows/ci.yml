@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, release]
+  pull_request:
+    branches: ['**']
+
+jobs:
+  cmake-only-tests:
+    name: Pure CMake Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S tests -B tests/build \
+            -DMODULES_DIR=${{ github.workspace }}/cmake
+
+      - name: Run pure-CMake tests
+        run: ctest --test-dir tests/build --output-on-failure -L cmake-only
+
+  integration-tests:
+    name: Integration Tests (Clang + LLVM 18)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM 18
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev
+          sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-18   100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
+
+      - name: Configure
+        run: |
+          cmake -S tests -B tests/build \
+            -DMODULES_DIR=${{ github.workspace }}/cmake
+
+      - name: Run all tests
+        run: ctest --test-dir tests/build --output-on-failure
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: tests/build/mylib-build/coverage/html/
+          if-no-files-found: error

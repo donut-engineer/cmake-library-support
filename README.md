@@ -1,24 +1,13 @@
-# cmake-utilities
+# cmake-library-support
 
-Shared CMake modules for C++ library projects. Provides coverage reporting, version generation, GitHub release dependency fetching, and parameterized install/package/find-module generation.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Authentication
+CMake modules for authoring and distributing C++ libraries. Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package/find-module generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
-This is a private repository. To allow CMake's FetchContent (or any `git clone` over HTTPS) to authenticate, set a `GH_TOKEN` environment variable and configure Git to rewrite GitHub URLs with the token.
+## Requirements
 
-### 1. Set `GH_TOKEN`
-
-```bash
-export GH_TOKEN="ghp_your_token_here"
-```
-
-### 2. Configure Git URL rewriting
-
-```bash
-git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
-```
-
-This rewrites all `https://github.com/` URLs to include authentication automatically, so FetchContent and `git clone` work without any changes to the repository URLs themselves.
+- CMake 3.15+
+- Clang + LLVM toolchain (for `coverage.cmake`, Linux/macOS only)
 
 ## Integration
 
@@ -26,12 +15,12 @@ Add to your project via FetchContent:
 
 ```cmake
 include(FetchContent)
-FetchContent_Declare(cmake_utilities
-    GIT_REPOSITORY https://github.com/donut-engineer/cmake-utilities.git
-    GIT_TAG main
+FetchContent_Declare(cmake_library_support
+    GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
+    GIT_TAG v2.0.0
 )
-FetchContent_MakeAvailable(cmake_utilities)
-include(${cmake_utilities_SOURCE_DIR}/cmake/cmake-utilities.cmake)
+FetchContent_MakeAvailable(cmake_library_support)
+include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
 ```
 
 ## Modules
@@ -39,35 +28,58 @@ include(${cmake_utilities_SOURCE_DIR}/cmake/cmake-utilities.cmake)
 ### coverage.cmake
 
 Clang source-based code coverage with HTML reporting and 100% line coverage enforcement.
+Requires `llvm-profdata` and `llvm-cov` (LLVM 18 preferred). Linux and macOS only.
 
 ```cmake
 include(coverage)
-target_enable_coverage(myTests)
+target_enable_coverage(TARGET myTests)
 add_coverage_report_target(TEST_TARGET myTests)
 ```
 
+Run the `coverage` target after building:
+
+```bash
+cmake --build build --target coverage
+```
+
+The build fails if line coverage drops below 100%. The HTML report is written to `build/coverage/html/index.html`.
+
 ### generate-version.cmake
 
-Git-based version stamping script. Invoked via `cmake -P`:
+Git-based version stamping. On the `release` branch the version is used as-is; on any other branch the short commit hash (and `-dirty` if the working tree is modified) is appended.
+
+Invoked via `cmake -P` as a custom target:
 
 ```cmake
 add_custom_target(generate_version ALL
     COMMAND ${CMAKE_COMMAND}
         -D SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -D VERSION=${PROJECT_VERSION}
-        -D VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-        -D VERSION_MINOR=${PROJECT_VERSION_MINOR}
-        -D VERSION_PATCH=${PROJECT_VERSION_PATCH}
         -D TEMPLATE=${CMAKE_SOURCE_DIR}/include/myLib/version.hpp.in
         -D OUTPUT=${CMAKE_BINARY_DIR}/include/myLib/version.hpp
-        -P ${CMAKE_UTILITIES_DIR}/generate-version.cmake
+        -P ${CMAKE_LIBRARY_SUPPORT_DIR}/generate-version.cmake
     COMMENT "Generating version header"
 )
 ```
 
+The template file uses `@VERSION_FULL@` as the substitution variable.
+
 ### github-release-dependency.cmake
 
-Fetches dependencies from private GitHub release assets using `GH_TOKEN`. If a download fails, the error log is sanitized so that the token is replaced with `***` — your PAT is never exposed in build output, even on failure.
+Fetches a dependency from a private GitHub release asset using `GH_TOKEN`. If a download
+fails, the error log is sanitized so the token is replaced with `***` — your PAT is never
+exposed in build output, even on failure. The archive is cached and only re-downloaded when
+the SHA256 changes.
+
+#### Setup
+
+Set a GitHub personal access token with `repo` scope:
+
+```bash
+export GH_TOKEN="ghp_your_token_here"
+```
+
+#### Usage
 
 ```cmake
 include(github-release-dependency)
@@ -108,62 +120,65 @@ gh release view v1.0.0 --repo owner/repo --json assets \
 
 Use the `url` value (or construct it from the `id`) as the `ASSET_URL` parameter.
 
-### find-modules.cmake
-
-Generates `Find*.cmake` modules at configure time for downstream module-mode `find_package()`.
-
-```cmake
-include(find-modules)
-generate_find_static_module(
-    MODULE_NAME "MyLibraryStatic"
-    NAMESPACE "MyLibrary"
-    TARGET_NAME "myLibrary"
-    HEADER_NAME "myLibrary/myLibrary.hpp"
-    PACKAGE_DOC "my-library"
-)
-generate_find_shared_module(
-    MODULE_NAME "MyLibraryShared"
-    NAMESPACE "MyLibrary"
-    TARGET_NAME "myLibraryShared"
-    HEADER_NAME "myLibrary/myLibrary.hpp"
-    PACKAGE_DOC "my-library"
-)
-generate_find_interface_module(
-    MODULE_NAME "MyLibraryInterface"
-    NAMESPACE "MyLibrary"
-    TARGET_NAME "myLibraryInterface"
-    HEADER_NAME "myLibrary/myLibrary.hpp"
-    PACKAGE_DOC "my-library"
-)
-```
-
 ### config-template.cmake
 
-Generates the `*-config.cmake.in` template for `configure_package_config_file()`.
+Generates the `*-config.cmake.in` template consumed by `configure_package_config_file()`
+in `install-rules.cmake`. Call this before `library_install_rules()`.
+
+By default (no flags), the template includes all three target types. Pass `STATIC`,
+`SHARED`, and/or `INTERFACE` flags to include only the relevant ones.
 
 ```cmake
 include(config-template)
+
+# All three target types (default)
 generate_config_template(PACKAGE_NAME "my-library")
+
+# Interface-only library
+generate_config_template(
+    PACKAGE_NAME "my-library"
+    INTERFACE
+)
+
+# Static and shared, no interface
+generate_config_template(
+    PACKAGE_NAME "my-library"
+    STATIC
+    SHARED
+)
 ```
 
 ### install-rules.cmake
 
-Installs static, shared, and interface library targets with proper export sets, config files, find modules, and documentation.
+Installs static, shared, and interface library targets with proper CMake export sets,
+config-mode package files, and optional Doxygen documentation. `STATIC_TARGET`,
+`SHARED_TARGET`, and `INTERFACE_TARGET` are all optional — provide only the ones your
+library actually builds. At least one must be specified.
 
 ```cmake
 include(install-rules)
+
+# All three target types
 library_install_rules(
     PACKAGE_NAME "my-library"
-    NAMESPACE "my-library"
+    NAMESPACE "MyLibrary"
     STATIC_TARGET myLibrary
     SHARED_TARGET myLibraryShared
+    INTERFACE_TARGET myLibraryInterface
+)
+
+# Interface-only library
+library_install_rules(
+    PACKAGE_NAME "my-library"
+    NAMESPACE "MyLibrary"
     INTERFACE_TARGET myLibraryInterface
 )
 ```
 
 ### package-rules.cmake
 
-Configures CPack for component-based packaging (Static, Shared, Interface).
+Configures CPack to produce a single `TGZ` (Linux) or `ZIP` (Windows) archive containing
+all install components (Static, Shared, Interface, Docs).
 
 ```cmake
 include(package-rules)
@@ -172,3 +187,7 @@ library_package_rules(
     DESCRIPTION "My Library C++ Library"
 )
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
