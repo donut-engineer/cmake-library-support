@@ -16,7 +16,7 @@ Add to your project via FetchContent:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
-    GIT_REPOSITORY https://github.com/tcarter690/cmake-library-support.git
+    GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
     GIT_TAG v1.0.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
@@ -55,9 +55,6 @@ add_custom_target(generate_version ALL
     COMMAND ${CMAKE_COMMAND}
         -D SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -D VERSION=${PROJECT_VERSION}
-        -D VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-        -D VERSION_MINOR=${PROJECT_VERSION_MINOR}
-        -D VERSION_PATCH=${PROJECT_VERSION_PATCH}
         -D TEMPLATE=${CMAKE_SOURCE_DIR}/include/myLib/version.hpp.in
         -D OUTPUT=${CMAKE_BINARY_DIR}/include/myLib/version.hpp
         -P ${CMAKE_LIBRARY_SUPPORT_DIR}/generate-version.cmake
@@ -128,23 +125,52 @@ Use the `url` value (or construct it from the `id`) as the `ASSET_URL` parameter
 Generates the `*-config.cmake.in` template consumed by `configure_package_config_file()`
 in `install-rules.cmake`. Call this before `library_install_rules()`.
 
+By default (no flags), the template includes all three target types. Pass `STATIC`,
+`SHARED`, and/or `INTERFACE` flags to include only the relevant ones.
+
 ```cmake
 include(config-template)
+
+# All three target types (default)
 generate_config_template(PACKAGE_NAME "my-library")
+
+# Interface-only library
+generate_config_template(
+    PACKAGE_NAME "my-library"
+    INTERFACE
+)
+
+# Static and shared, no interface
+generate_config_template(
+    PACKAGE_NAME "my-library"
+    STATIC
+    SHARED
+)
 ```
 
 ### install-rules.cmake
 
 Installs static, shared, and interface library targets with proper CMake export sets,
-config-mode package files, and optional Doxygen documentation.
+config-mode package files, and optional Doxygen documentation. `STATIC_TARGET`,
+`SHARED_TARGET`, and `INTERFACE_TARGET` are all optional — provide only the ones your
+library actually builds. At least one must be specified.
 
 ```cmake
 include(install-rules)
+
+# All three target types
 library_install_rules(
     PACKAGE_NAME "my-library"
     NAMESPACE "MyLibrary"
     STATIC_TARGET myLibrary
     SHARED_TARGET myLibraryShared
+    INTERFACE_TARGET myLibraryInterface
+)
+
+# Interface-only library
+library_install_rules(
+    PACKAGE_NAME "my-library"
+    NAMESPACE "MyLibrary"
     INTERFACE_TARGET myLibraryInterface
 )
 ```
