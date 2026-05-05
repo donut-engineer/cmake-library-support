@@ -8,8 +8,11 @@ on:
 
 jobs:
   cmake-only-tests:
-    name: Pure CMake Tests
-    runs-on: ubuntu-24.04
+    name: Pure CMake Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
     steps:
       - uses: actions/checkout@v4
 
