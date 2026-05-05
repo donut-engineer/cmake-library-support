@@ -31,6 +31,9 @@ _add_cmake_configure_test(cmake-library-support
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 
+_add_cmake_configure_test(install-rules
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-install-rules")
+
 # generate-version is a cmake -P script; invoke via a wrapper script
 add_test(
   NAME generate-version
