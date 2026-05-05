@@ -32,7 +32,7 @@ Requires `llvm-profdata` and `llvm-cov` (LLVM 18 preferred). Linux and macOS onl
 
 ```cmake
 include(coverage)
-target_enable_coverage(myTests)
+target_enable_coverage(TARGET myTests)
 add_coverage_report_target(TEST_TARGET myTests)
 ```
 
