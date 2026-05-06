@@ -45,7 +45,7 @@ CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 for the pure-CMake suit
 1. Confirm `develop` is green on CI.
 2. Update `CHANGELOG.md`: move `[Unreleased]` content into a new `[X.Y.Z] - YYYY-MM-DD` section and refresh the bottom-of-file links.
 3. Open a PR `develop` → `release` and merge with a merge commit (not squash, so tag history is preserved).
-4. From `release`, create an annotated tag and push it: `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`. Use annotated tags only — lightweight tags break `git describe`, and `generate-version.cmake` keys off the `release` branch name.
+4. From `release`, create an annotated tag and push it: `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`. Use annotated tags — lightweight tags are invisible to `git describe` by default and carry no tagger or message metadata. (`generate-version.cmake` itself only reads the branch name and `git rev-parse --short HEAD`, so the choice is mostly about tooling and convention.)
 5. Draft a GitHub Release for the tag and paste the new CHANGELOG section into the body.
 
 ## Commit messages
