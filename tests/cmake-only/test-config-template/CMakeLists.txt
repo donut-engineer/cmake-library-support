@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(test-config-template LANGUAGES NONE)
 
 list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
