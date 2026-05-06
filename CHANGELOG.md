@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- CI status badge and a one-paragraph project rationale in `README.md`.
+- Pointer from `README.md` to `tests/integration/mylib/` as a complete consumer example.
+- `.github/ISSUE_TEMPLATE/bug_report.md` and `.github/PULL_REQUEST_TEMPLATE.md`.
+- `SECURITY.md` describing how to report vulnerabilities.
+- *Releasing* section in `CONTRIBUTING.md` documenting the `develop` → `release` → annotated-tag flow.
+
+### Changed
+- `CONTRIBUTING.md` *Testing* section corrected — the repo has had an automated test suite (pure-CMake + integration) since the CI workflow landed.
+- `README.md` *Requirements* now pins LLVM 18 (with note that older versions may work).
+- Bumped `cmake_minimum_required` from 3.14 to 3.15 in `tests/CMakeLists.txt` and the three `tests/cmake-only/*/CMakeLists.txt` files to match the v2.0.0 floor enforced by `cmake-library-support.cmake`.
+
 ## [2.0.0] - 2026-05-04
 
 ### Added
