@@ -1,13 +1,16 @@
 # cmake-library-support
 
+[![CI](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml/badge.svg)](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-CMake modules for authoring and distributing C++ libraries. Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package/find-module generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
+Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as six independently-includeable modules.
+
+Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
 ## Requirements
 
 - CMake 3.15+
-- Clang + LLVM toolchain (for `coverage.cmake`, Linux/macOS only)
+- Clang + LLVM 18 (for `coverage.cmake`, Linux/macOS only). Older LLVM versions may work; CI tests against 18.
 
 ## Integration
 
@@ -22,6 +25,8 @@ FetchContent_Declare(cmake_library_support
 FetchContent_MakeAvailable(cmake_library_support)
 include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
 ```
+
+For a complete consumer example that exercises every module — install rules, config templates, coverage, and CPack — see [`tests/integration/mylib/CMakeLists.txt`](tests/integration/mylib/CMakeLists.txt).
 
 ## Modules
 
