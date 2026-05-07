@@ -33,10 +33,12 @@ The repo ships two test suites under `tests/`:
 Run locally:
 
 ```bash
-cmake -S tests -B tests/build -DMODULES_DIR=$PWD/cmake
+cmake -S tests -B tests/build -G Ninja -DMODULES_DIR=$PWD/cmake
 ctest --test-dir tests/build --output-on-failure -L cmake-only   # fast, no compiler needed
 ctest --test-dir tests/build --output-on-failure                 # full suite, requires Clang + LLVM 18
 ```
+
+> **Windows:** `-G Ninja` is required. Without it CMake selects the Visual Studio generator (multi-config), and `ctest` reports "No tests were found" unless `-C <config>` is also passed. Ninja is pre-installed with Visual Studio.
 
 CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 + Windows for the pure-CMake suite; Ubuntu 24.04 with Clang 18 for the integration suite). See `.github/workflows/ci.yml`.
 
