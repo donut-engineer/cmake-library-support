@@ -1,7 +1,6 @@
-include(FetchContent)
-
 # Fetches a dependency from a private GitHub release asset, keeping GH_TOKEN
 # out of error output.
+# Requires CMake 3.18+ for file(ARCHIVE_EXTRACT).
 #
 # Usage:
 #   github_release_dependency(
@@ -12,6 +11,10 @@ include(FetchContent)
 #       EXTENSION ".tar.gz"
 #   )
 function(github_release_dependency)
+    if(CMAKE_VERSION VERSION_LESS "3.18")
+        message(FATAL_ERROR "github_release_dependency requires CMake 3.18 or higher (found ${CMAKE_VERSION})")
+    endif()
+
     cmake_parse_arguments(ARG "" "NAME;ASSET_URL;SHA256;PACKAGE_NAME;EXTENSION" "" ${ARGN})
 
     if(NOT ARG_NAME OR NOT ARG_ASSET_URL OR NOT ARG_SHA256 OR NOT ARG_PACKAGE_NAME OR NOT ARG_EXTENSION)
@@ -47,16 +50,11 @@ function(github_release_dependency)
         endif()
     endif()
 
-    FetchContent_Declare(
-        ${ARG_NAME}
-        URL "file://${ARCHIVE}"
-        URL_HASH SHA256=${ARG_SHA256}
-        DOWNLOAD_NO_PROGRESS ON
-    )
-    FetchContent_Populate(${ARG_NAME})
+    set(_source_dir "${FETCHCONTENT_BASE_DIR}/${ARG_NAME}-src")
+    file(MAKE_DIRECTORY "${_source_dir}")
+    file(ARCHIVE_EXTRACT INPUT "${ARCHIVE}" DESTINATION "${_source_dir}")
 
-    string(TOLOWER "${ARG_NAME}" LOWER_NAME)
-    list(APPEND CMAKE_PREFIX_PATH "${${LOWER_NAME}_SOURCE_DIR}")
+    list(APPEND CMAKE_PREFIX_PATH "${_source_dir}")
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" PARENT_SCOPE)
     find_package(${ARG_PACKAGE_NAME} REQUIRED)
 endfunction()

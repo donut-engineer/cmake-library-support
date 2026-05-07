@@ -38,7 +38,9 @@ ctest --test-dir tests/build --output-on-failure -L cmake-only   # fast, no comp
 ctest --test-dir tests/build --output-on-failure                 # full suite, requires Clang + LLVM 18
 ```
 
-CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 for the pure-CMake suite; Ubuntu 24.04 with Clang 18 for the integration suite). See `.github/workflows/ci.yml`.
+CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 + Windows for the pure-CMake suite; Ubuntu 24.04 with Clang 18 for the integration suite). See `.github/workflows/ci.yml`.
+
+**Known testing boundary:** The `STATIC_TARGET` and `SHARED_TARGET` permutations of `install-rules.cmake` require a C++ compiler to configure and are only covered by the integration test (which exercises all three target types together). The pure-CMake suite covers only the `INTERFACE_TARGET` path.
 
 ## Releasing
 

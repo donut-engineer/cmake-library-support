@@ -79,3 +79,56 @@ endif()
 if(NOT _content MATCHES "${_expected_version}")
   message(FATAL_ERROR "Expected version '${_expected_version}' not found in generated output:\n${_content}")
 endif()
+
+# ---------------------------------------------------------------------------
+# Sub-test: release branch — version must be used as-is (no hash appended)
+# ---------------------------------------------------------------------------
+# Create a minimal git repo whose HEAD points to a branch named "release".
+# git symbolic-ref sets the branch name without requiring any commits, which
+# is sufficient for generate-version.cmake (it only reads the branch name via
+# git rev-parse --abbrev-ref HEAD before deciding whether to append a hash).
+set(_release_repo "${BINARY_DIR}/tmp-release-repo")
+file(MAKE_DIRECTORY "${_release_repo}")
+
+execute_process(
+  COMMAND git init "${_release_repo}"
+  RESULT_VARIABLE _init_result
+  OUTPUT_QUIET
+  ERROR_QUIET
+)
+if(NOT _init_result EQUAL 0)
+  message(WARNING "generate-version release-branch test: git init failed, skipping sub-test")
+else()
+  execute_process(
+    COMMAND git -C "${_release_repo}" symbolic-ref HEAD refs/heads/release
+    RESULT_VARIABLE _ref_result
+    OUTPUT_QUIET
+    ERROR_QUIET
+  )
+  if(NOT _ref_result EQUAL 0)
+    message(WARNING "generate-version release-branch test: git symbolic-ref failed, skipping sub-test")
+  else()
+    set(_release_output "${BINARY_DIR}/release-version.h")
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+        "-DSOURCE_DIR=${_release_repo}"
+        "-DVERSION=2.5.0"
+        "-DTEMPLATE=${TEMPLATE}"
+        "-DOUTPUT=${_release_output}"
+        -P "${MODULES_DIR}/generate-version.cmake"
+      RESULT_VARIABLE _rel_result
+      OUTPUT_VARIABLE _rel_output
+      ERROR_VARIABLE  _rel_error
+    )
+    if(NOT _rel_result EQUAL 0)
+      message(FATAL_ERROR "generate-version.cmake (release branch) exited with ${_rel_result}\n${_rel_output}\n${_rel_error}")
+    endif()
+    file(READ "${_release_output}" _rel_content)
+    if(NOT _rel_content MATCHES "2\\.5\\.0")
+      message(FATAL_ERROR "Release-branch output does not contain '2.5.0':\n${_rel_content}")
+    endif()
+    if(_rel_content MATCHES "2\\.5\\.0-")
+      message(FATAL_ERROR "Release-branch output must not contain a hash suffix:\n${_rel_content}")
+    endif()
+  endif()
+endif()
