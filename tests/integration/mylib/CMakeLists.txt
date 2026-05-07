@@ -11,7 +11,7 @@ if(NOT MODULES_DIR)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
-include(cmake-library-support)
+set(CMAKE_LIBRARY_SUPPORT_DIR "${MODULES_DIR}" CACHE INTERNAL "" FORCE)
 include(config-template)
 include(install-rules)
 

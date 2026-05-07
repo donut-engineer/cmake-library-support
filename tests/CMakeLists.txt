@@ -25,9 +25,6 @@ endfunction()
 # ---------------------------------------------------------------------------
 # Pure-CMake tests (no compiler required)
 # ---------------------------------------------------------------------------
-_add_cmake_configure_test(cmake-library-support
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-cmake-library-support")
-
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 

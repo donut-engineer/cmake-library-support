@@ -21,10 +21,10 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v2.1.0
+    GIT_TAG v2.1.1
 )
 FetchContent_MakeAvailable(cmake_library_support)
-include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
+# CMAKE_LIBRARY_SUPPORT_DIR and CMAKE_MODULE_PATH are now set automatically
 ```
 
 For a complete consumer example that exercises every module — install rules, config templates, coverage, and CPack — see [`tests/integration/mylib/CMakeLists.txt`](tests/integration/mylib/CMakeLists.txt).
