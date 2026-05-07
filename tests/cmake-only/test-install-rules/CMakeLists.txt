@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(test-install-rules LANGUAGES NONE VERSION 1.0.0)
 
 list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
-include(cmake-library-support)
+set(CMAKE_LIBRARY_SUPPORT_DIR "${MODULES_DIR}" CACHE INTERNAL "" FORCE)
 include(config-template)
 include(install-rules)
 
