@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-05-07
+
+### Added
+- Root `CMakeLists.txt` so `FetchContent_MakeAvailable(cmake_library_support)` automatically
+  sets `CMAKE_LIBRARY_SUPPORT_DIR` and `CMAKE_MODULE_PATH`. No extra `include()` call needed.
+
 ### Fixed
 - `github-release-dependency.cmake`: added `FETCHCONTENT_BASE_DIR` fallback to `${CMAKE_BINARY_DIR}/_deps` so the module works when the consumer has not called `include(FetchContent)` beforehand.
 - `github-release-dependency.cmake`: archive is now re-extracted only when the SHA256 changes (stamp file), restoring the caching behaviour that `FetchContent_Populate` provided before it was replaced with `file(ARCHIVE_EXTRACT)`.
+
+### Removed
+- `cmake/cmake-library-support.cmake` — its logic now lives in the root `CMakeLists.txt`.
+- `test-cmake-library-support` cmake-only test (tested the deleted entry-point file).
 
 ## [2.1.0] - 2026-05-06
 
@@ -89,7 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...HEAD
+[2.1.1]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.1.0...v1.2.0
