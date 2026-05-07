@@ -133,18 +133,18 @@ add_test(
   COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}/mylib-build"
     --prefix "${CMAKE_BINARY_DIR}/mylib-install"
 )
+set_tests_properties(integration-install PROPERTIES
+  FIXTURES_REQUIRED mylib_built
+  FIXTURES_SETUP    mylib_installed
+  TIMEOUT           60
+  LABELS            integration)
+
 add_test(
   NAME integration-verify
   COMMAND ${CMAKE_COMMAND}
     "-DINSTALL_PREFIX=${CMAKE_BINARY_DIR}/mylib-install"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/verify-install.cmake"
 )
-
-set_tests_properties(integration-install PROPERTIES
-  FIXTURES_REQUIRED mylib_built
-  FIXTURES_SETUP    mylib_installed
-  TIMEOUT           60
-  LABELS            integration)
 set_tests_properties(integration-verify PROPERTIES
   FIXTURES_REQUIRED mylib_installed
   TIMEOUT           30
