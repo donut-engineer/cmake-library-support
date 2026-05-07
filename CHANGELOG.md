@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- `github-release-dependency.cmake`: added `FETCHCONTENT_BASE_DIR` fallback to `${CMAKE_BINARY_DIR}/_deps` so the module works when the consumer has not called `include(FetchContent)` beforehand.
-- `github-release-dependency.cmake`: archive is now re-extracted only when the SHA256 changes (stamp file), restoring the caching behaviour that `FetchContent_Populate` provided before it was replaced with `file(ARCHIVE_EXTRACT)`.
-
 ## [2.1.0] - 2026-05-06
 
 ### Added
@@ -37,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `cmake-library-support.cmake`: `CMAKE_LIBRARY_SUPPORT_DIR` cache entry now uses `FORCE` so the path updates correctly when a consumer upgrades the `GIT_TAG` in FetchContent without wiping their build directory.
 - `github-release-dependency.cmake`: replaced deprecated `FetchContent_Populate` (single-argument form, deprecated in CMake 3.30) with `file(ARCHIVE_EXTRACT)`. Module now requires CMake 3.18+.
+- `github-release-dependency.cmake`: added `FETCHCONTENT_BASE_DIR` fallback to `${CMAKE_BINARY_DIR}/_deps` so the module works when the consumer has not called `include(FetchContent)` beforehand.
+- `github-release-dependency.cmake`: archive is now re-extracted only when the SHA256 changes (stamp file), restoring the caching behaviour that `FetchContent_Populate` provided before it was replaced with `file(ARCHIVE_EXTRACT)`.
 
 ## [2.0.0] - 2026-05-04
 
