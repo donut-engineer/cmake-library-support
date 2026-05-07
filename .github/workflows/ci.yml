@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-14, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +44,16 @@ jobs:
 
       - name: Run all tests
         run: ctest --test-dir tests/build --output-on-failure
+
+      - name: Install to temp prefix
+        run: |
+          cmake --install tests/build/mylib-build \
+            --prefix tests/build/mylib-install
+
+      - name: Verify installed artifacts
+        run: |
+          test -f tests/build/mylib-install/lib/cmake/mylib/mylib-config.cmake
+          test -f tests/build/mylib-install/include/mylib/mylib.hpp
 
       - name: Upload coverage report
         if: always()

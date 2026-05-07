@@ -17,12 +17,21 @@ endfunction()
 #   5. Fails the build if line coverage is below 100%
 #
 # Required argument:
-#   TEST_TARGET  — the CMake test executable target (must be built before running)
+#   TEST_TARGET    — the CMake test executable target (must be built before running)
+#
+# Optional argument:
+#   EXCLUDE_REGEX  — regex passed to -ignore-filename-regex (matched against full file
+#                    paths). Defaults to excluding googletest, googlemock, /usr/, and
+#                    any path containing /tests/.
 function(add_coverage_report_target)
-    cmake_parse_arguments(ARG "" "TEST_TARGET" "" ${ARGN})
+    cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX" "" ${ARGN})
 
     if(NOT ARG_TEST_TARGET)
         message(FATAL_ERROR "add_coverage_report_target: TEST_TARGET is required")
+    endif()
+
+    if(NOT ARG_EXCLUDE_REGEX)
+        set(ARG_EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/tests/.*")
     endif()
 
     find_program(LLVM_PROFDATA_EXE NAMES llvm-profdata-18 llvm-profdata)
@@ -42,10 +51,6 @@ function(add_coverage_report_target)
     set(PROFRAW_PATTERN  "${COVERAGE_DIR}/coverage-%p.profraw")
     set(PROFDATA_FILE    "${COVERAGE_DIR}/coverage.profdata")
     set(TEST_EXE         "$<TARGET_FILE:${ARG_TEST_TARGET}>")
-
-    # Patterns passed to -ignore-filename-regex to exclude third-party and
-    # system code from the report. The regex is matched against full file paths.
-    set(IGNORE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/tests/.*")
 
     add_custom_target(coverage
         VERBATIM
@@ -67,12 +72,12 @@ function(add_coverage_report_target)
             "-instr-profile=${PROFDATA_FILE}"
             "-format=html"
             "-output-dir=${COVERAGE_DIR}/html"
-            "-ignore-filename-regex=${IGNORE_REGEX}"
+            "-ignore-filename-regex=${ARG_EXCLUDE_REGEX}"
         # Print a line coverage summary to stdout and save for the 100% check.
         # bash -c is used so the shell handles the | pipe to tee.
         # The regex value is single-quoted so its | alternators are not treated as pipes.
         COMMAND bash -c
-            "${LLVM_COV_EXE} report ${TEST_EXE} -instr-profile=${PROFDATA_FILE} '-ignore-filename-regex=${IGNORE_REGEX}' | tee ${COVERAGE_DIR}/report.txt"
+            "${LLVM_COV_EXE} report ${TEST_EXE} -instr-profile=${PROFDATA_FILE} '-ignore-filename-regex=${ARG_EXCLUDE_REGEX}' | tee ${COVERAGE_DIR}/report.txt"
         # Fail if line coverage (4th-from-last column of the TOTAL row) is not 100.00%.
         # The report columns are: Regions Missed Cover | Functions Missed Executed | Lines Missed Cover | Branches Missed Cover
         # $(NF-3) selects the Lines Cover column regardless of whether branch data is present.

@@ -34,6 +34,38 @@ _add_cmake_configure_test(config-template
 _add_cmake_configure_test(install-rules
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-install-rules")
 
+_add_cmake_configure_test(package-rules
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-package-rules")
+
+# github-release-dependency: offline arg-validation tests
+# Each sub-test configures the same project with a different -D flag.
+# WILL_FAIL means CTest expects a non-zero exit code (cmake FATAL_ERROR).
+add_test(
+  NAME github-release-dependency-missing-args
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-github-release-dependency"
+    -B "${CMAKE_BINARY_DIR}/github-release-dependency-missing-args-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DTEST_MISSING_ARGS=ON
+)
+set_tests_properties(github-release-dependency-missing-args PROPERTIES
+  TIMEOUT   30
+  LABELS    cmake-only
+  WILL_FAIL TRUE)
+
+add_test(
+  NAME github-release-dependency-missing-token
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-github-release-dependency"
+    -B "${CMAKE_BINARY_DIR}/github-release-dependency-missing-token-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DTEST_MISSING_TOKEN=ON
+)
+set_tests_properties(github-release-dependency-missing-token PROPERTIES
+  TIMEOUT   30
+  LABELS    cmake-only
+  WILL_FAIL TRUE)
+
 # generate-version is a cmake -P script; invoke via a wrapper script
 add_test(
   NAME generate-version
@@ -94,4 +126,26 @@ set_tests_properties(integration-test PROPERTIES
 set_tests_properties(integration-coverage PROPERTIES
   FIXTURES_REQUIRED mylib_tested
   TIMEOUT           120
+  LABELS            integration)
+
+add_test(
+  NAME integration-install
+  COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}/mylib-build"
+    --prefix "${CMAKE_BINARY_DIR}/mylib-install"
+)
+add_test(
+  NAME integration-verify
+  COMMAND ${CMAKE_COMMAND}
+    "-DINSTALL_PREFIX=${CMAKE_BINARY_DIR}/mylib-install"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/verify-install.cmake"
+)
+
+set_tests_properties(integration-install PROPERTIES
+  FIXTURES_REQUIRED mylib_built
+  FIXTURES_SETUP    mylib_installed
+  TIMEOUT           60
+  LABELS            integration)
+set_tests_properties(integration-verify PROPERTIES
+  FIXTURES_REQUIRED mylib_installed
+  TIMEOUT           30
   LABELS            integration)
