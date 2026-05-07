@@ -25,6 +25,12 @@ function(github_release_dependency)
         message(FATAL_ERROR "GH_TOKEN environment variable is not set")
     endif()
 
+    # FETCHCONTENT_BASE_DIR is only defined after include(FetchContent). Provide
+    # the same default so consumers don't need to include FetchContent themselves.
+    if(NOT FETCHCONTENT_BASE_DIR)
+        set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps")
+    endif()
+
     set(ARCHIVE "${FETCHCONTENT_BASE_DIR}/${ARG_NAME}${ARG_EXTENSION}")
 
     set(NEEDS_DOWNLOAD TRUE)
@@ -52,7 +58,14 @@ function(github_release_dependency)
 
     set(_source_dir "${FETCHCONTENT_BASE_DIR}/${ARG_NAME}-src")
     file(MAKE_DIRECTORY "${_source_dir}")
-    file(ARCHIVE_EXTRACT INPUT "${ARCHIVE}" DESTINATION "${_source_dir}")
+
+    # Skip extraction when the stamp matches the expected SHA256, mirroring the
+    # caching behaviour of FetchContent_Populate which this replaced.
+    set(_stamp "${_source_dir}/.extracted")
+    if(NOT EXISTS "${_stamp}" OR NEEDS_DOWNLOAD)
+        file(ARCHIVE_EXTRACT INPUT "${ARCHIVE}" DESTINATION "${_source_dir}")
+        file(WRITE "${_stamp}" "${ARG_SHA256}")
+    endif()
 
     list(APPEND CMAKE_PREFIX_PATH "${_source_dir}")
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" PARENT_SCOPE)
