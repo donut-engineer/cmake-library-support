@@ -21,12 +21,12 @@ function(library_package_rules)
     # Include architecture in package filename
     set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
-    # TGZ for Linux, ZIP for Windows
-    set(CPACK_GENERATOR "TGZ;ZIP")
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(CPACK_GENERATOR "ZIP")
+    else()
+        set(CPACK_GENERATOR "TGZ")
+    endif()
 
-    # Optional: If you still want the UI (like a Windows NSIS installer) 
-    # to show checkboxes, you can keep these, but for ZIP/TGZ they are ignored 
-    # now that component install is OFF.
     set(CPACK_COMPONENTS_ALL Static Shared Interface Docs)
 
     include(CPack)

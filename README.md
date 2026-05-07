@@ -1,13 +1,17 @@
 # cmake-library-support
 
+[![CI](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml/badge.svg)](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-CMake modules for authoring and distributing C++ libraries. Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package/find-module generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
+Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as six independently-includeable modules.
+
+Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
 ## Requirements
 
-- CMake 3.15+
-- Clang + LLVM toolchain (for `coverage.cmake`, Linux/macOS only)
+- CMake 3.15+ (all modules)
+- CMake 3.18+ (`github-release-dependency.cmake` only — uses `file(ARCHIVE_EXTRACT)`)
+- Clang + LLVM 18 (for `coverage.cmake`, Linux/macOS only). Older LLVM versions may work; CI tests against 18.
 
 ## Integration
 
@@ -17,11 +21,13 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v2.0.0
+    GIT_TAG v2.1.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
 include(${cmake_library_support_SOURCE_DIR}/cmake/cmake-library-support.cmake)
 ```
+
+For a complete consumer example that exercises every module — install rules, config templates, coverage, and CPack — see [`tests/integration/mylib/CMakeLists.txt`](tests/integration/mylib/CMakeLists.txt).
 
 ## Modules
 
@@ -36,6 +42,15 @@ target_enable_coverage(TARGET myTests)
 add_coverage_report_target(TEST_TARGET myTests)
 ```
 
+Pass `EXCLUDE_REGEX` to override which paths are excluded from the report (matched against full file paths). The default excludes `googletest`, `googlemock`, `/usr/`, and any path containing `/tests/`:
+
+```cmake
+add_coverage_report_target(
+    TEST_TARGET myTests
+    EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/tests/.*"
+)
+```
+
 Run the `coverage` target after building:
 
 ```bash
@@ -47,6 +62,8 @@ The build fails if line coverage drops below 100%. The HTML report is written to
 ### generate-version.cmake
 
 Git-based version stamping. On the `release` branch the version is used as-is; on any other branch the short commit hash (and `-dirty` if the working tree is modified) is appended.
+
+> **Release branch name:** The script matches the literal string `release`. Any other branch name — including `main`, `production`, or `stable` — produces a hash-suffixed version string. Ensure your release branch is named `release`, or wrap the `add_custom_target` call to pass a different `-DSOURCE_DIR` pointing to a checkout of that branch.
 
 Invoked via `cmake -P` as a custom target:
 
@@ -120,6 +137,8 @@ gh release view v1.0.0 --repo owner/repo --json assets \
 
 Use the `url` value (or construct it from the `id`) as the `ASSET_URL` parameter.
 
+> **Testing note:** The download, SHA256 cache-hit, and token-sanitization paths of this module require a live `GH_TOKEN` and a real private release asset, so they are not covered by the automated test suite. The argument-validation and missing-token paths are tested. The token-scrubbing logic can be reviewed in [`cmake/github-release-dependency.cmake`](cmake/github-release-dependency.cmake).
+
 ### config-template.cmake
 
 Generates the `*-config.cmake.in` template consumed by `configure_package_config_file()`
@@ -177,8 +196,7 @@ library_install_rules(
 
 ### package-rules.cmake
 
-Configures CPack to produce a single `TGZ` (Linux) or `ZIP` (Windows) archive containing
-all install components (Static, Shared, Interface, Docs).
+Configures CPack to produce a single archive containing all install components (Static, Shared, Interface, Docs). The format is `.tar.gz` on Linux/macOS and `.zip` on Windows.
 
 ```cmake
 include(package-rules)

@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-06
+
+### Added
+- CI status badge and a one-paragraph project rationale in `README.md`.
+- Pointer from `README.md` to `tests/integration/mylib/` as a complete consumer example.
+- `.github/ISSUE_TEMPLATE/bug_report.md` and `.github/PULL_REQUEST_TEMPLATE.md`.
+- `SECURITY.md` describing how to report vulnerabilities.
+- *Releasing* section in `CONTRIBUTING.md` documenting the `develop` → `release` → annotated-tag flow.
+- `add_coverage_report_target()` accepts an optional `EXCLUDE_REGEX` argument to override the default file-path exclusion pattern.
+- `README.md` documents the `release` branch name constraint in `generate-version.cmake`.
+- `README.md` documents the testing boundary for `github-release-dependency.cmake`.
+- Pure-CMake tests for `package-rules.cmake` (CPack config generation) and `github-release-dependency.cmake` (arg-validation, missing-token).
+- Release-branch code path in `generate-version.cmake` is now covered by the test suite.
+- Integration test chain now includes `cmake --install` and artifact-presence verification.
+- Windows added to the pure-CMake CI test matrix.
+
+### Changed
+- `CONTRIBUTING.md` *Testing* section corrected — the repo has had an automated test suite (pure-CMake + integration) since the CI workflow landed.
+- `README.md` *Requirements* now pins LLVM 18 (with note that older versions may work) and lists the per-module CMake minimum for `github-release-dependency.cmake` (3.18+).
+- Bumped `cmake_minimum_required` from 3.14 to 3.15 in `tests/CMakeLists.txt` and the three `tests/cmake-only/*/CMakeLists.txt` files to match the v2.0.0 floor enforced by `cmake-library-support.cmake`.
+- `package-rules.cmake` now produces `.tar.gz` on Linux/macOS and `.zip` on Windows (previously generated both formats on all platforms).
+- `CONTRIBUTING.md` notes the STATIC/SHARED pure-CMake test coverage boundary.
+
+### Fixed
+- `cmake-library-support.cmake`: `CMAKE_LIBRARY_SUPPORT_DIR` cache entry now uses `FORCE` so the path updates correctly when a consumer upgrades the `GIT_TAG` in FetchContent without wiping their build directory.
+- `github-release-dependency.cmake`: replaced deprecated `FetchContent_Populate` (single-argument form, deprecated in CMake 3.30) with `file(ARCHIVE_EXTRACT)`. Module now requires CMake 3.18+.
+- `github-release-dependency.cmake`: added `FETCHCONTENT_BASE_DIR` fallback to `${CMAKE_BINARY_DIR}/_deps` so the module works when the consumer has not called `include(FetchContent)` beforehand.
+- `github-release-dependency.cmake`: archive is now re-extracted only when the SHA256 changes (stamp file), restoring the caching behaviour that `FetchContent_Populate` provided before it was replaced with `file(ARCHIVE_EXTRACT)`.
+
 ## [2.0.0] - 2026-05-04
 
 ### Added
@@ -58,7 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.0.0...v1.1.0

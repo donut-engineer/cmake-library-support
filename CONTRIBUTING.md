@@ -25,7 +25,32 @@ Only modules that serve a C++ library author's build and release pipeline belong
 
 ## Testing
 
-There is no automated test suite. Before submitting a PR, manually verify your module works correctly when consumed by a real CMake project via `FetchContent`. Document the test scenario in your PR description.
+The repo ships two test suites under `tests/`:
+
+- **Pure-CMake tests** (`-L cmake-only`) — exercise the modules through `cmake --configure` and `cmake -P` without a C++ compiler.
+- **Integration tests** — build a minimal consumer library (`tests/integration/mylib/`) with Clang + LLVM 18, run its GoogleTest suite, and produce a 100% line-coverage report.
+
+Run locally:
+
+```bash
+cmake -S tests -B tests/build -G Ninja -DMODULES_DIR=$PWD/cmake
+ctest --test-dir tests/build --output-on-failure -L cmake-only   # fast, no compiler needed
+ctest --test-dir tests/build --output-on-failure                 # full suite, requires Clang + LLVM 18
+```
+
+> **Windows:** `-G Ninja` is required. Without it CMake selects the Visual Studio generator (multi-config), and `ctest` reports "No tests were found" unless `-C <config>` is also passed. Ninja is pre-installed with Visual Studio.
+
+CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 + Windows for the pure-CMake suite; Ubuntu 24.04 with Clang 18 for the integration suite). See `.github/workflows/ci.yml`.
+
+**Known testing boundary:** The `STATIC_TARGET` and `SHARED_TARGET` permutations of `install-rules.cmake` require a C++ compiler to configure and are only covered by the integration test (which exercises all three target types together). The pure-CMake suite covers only the `INTERFACE_TARGET` path.
+
+## Releasing
+
+1. Confirm `develop` is green on CI.
+2. Update `CHANGELOG.md`: move `[Unreleased]` content into a new `[X.Y.Z] - YYYY-MM-DD` section and refresh the bottom-of-file links.
+3. Open a PR `develop` → `release` and merge with a merge commit (not squash, so tag history is preserved).
+4. From `release`, create an annotated tag and push it: `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`. Use annotated tags — lightweight tags are invisible to `git describe` by default and carry no tagger or message metadata. (`generate-version.cmake` itself only reads the branch name and `git rev-parse --short HEAD`, so the choice is mostly about tooling and convention.)
+5. Draft a GitHub Release for the tag and paste the new CHANGELOG section into the body.
 
 ## Commit messages
 
