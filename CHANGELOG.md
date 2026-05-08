@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-05-07
+
+### Fixed
+- Root `CMakeLists.txt`: propagate `CMAKE_MODULE_PATH` to the consumer's scope via
+  `PARENT_SCOPE` so that `FetchContent_MakeAvailable(cmake_library_support)` correctly
+  makes the cmake/ directory discoverable without any additional consumer code.
+
 ## [2.1.1] - 2026-05-07
 
 ### Added
@@ -99,7 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/donut-engineer/cmake-library-support/compare/v1.2.0...v2.0.0
