@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-05-09
+
+### Fixed
+- `install-rules.cmake`: exclude `*.in` template files from the public header install so they are never packaged alongside compiled headers.
+
 ## [2.1.2] - 2026-05-07
 
 ### Fixed
@@ -106,7 +111,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...HEAD
+[2.1.3]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.0.0...v2.1.0
