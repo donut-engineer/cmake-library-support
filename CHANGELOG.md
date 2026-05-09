@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `sanitizers.cmake` module with `target_enable_sanitizers()` for enabling AddressSanitizer, UndefinedBehaviorSanitizer, ThreadSanitizer, MemorySanitizer, and LeakSanitizer with compiler-aware flags (GCC, Clang, AppleClang, MSVC). Validates unsupported and mutually-incompatible combinations at configure time.
+
 ## [2.1.3] - 2026-05-09
 
 ### Fixed

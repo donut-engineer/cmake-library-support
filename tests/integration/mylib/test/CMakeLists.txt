@@ -9,6 +9,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 include(coverage)
+include(sanitizers)
 include(GoogleTest)
 
 add_executable(test_mylib test_mylib.cpp)
@@ -16,6 +17,9 @@ target_link_libraries(test_mylib PRIVATE mylib GTest::gtest_main)
 
 # Exercise target_enable_coverage (adds -fprofile-instr-generate -fcoverage-mapping)
 target_enable_coverage(TARGET test_mylib)
+
+# Exercise target_enable_sanitizers (adds -fsanitize=address,undefined -fno-omit-frame-pointer)
+target_enable_sanitizers(TARGET test_mylib ADDRESS UNDEFINED)
 
 gtest_discover_tests(test_mylib)
 
