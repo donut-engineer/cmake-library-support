@@ -83,6 +83,7 @@ function(library_install_rules)
                 DIRECTORY ${PROJECT_SOURCE_DIR}/include/
                 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
                 COMPONENT ${_comp}
+                PATTERN "*.in" EXCLUDE
             )
         endif()
     endforeach()
