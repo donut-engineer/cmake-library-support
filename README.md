@@ -21,7 +21,7 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v2.1.2
+    GIT_TAG v2.1.3
 )
 FetchContent_MakeAvailable(cmake_library_support)
 # CMAKE_LIBRARY_SUPPORT_DIR and CMAKE_MODULE_PATH are now set automatically
