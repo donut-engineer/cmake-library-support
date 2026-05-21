@@ -59,6 +59,38 @@ cmake --build build --target coverage
 
 The build fails if line coverage drops below 100%. The HTML report is written to `build/coverage/html/index.html`.
 
+### sanitizers.cmake
+
+Enables compiler/linker sanitizer flags on a target with the right syntax for
+the active compiler. Validates unsupported and mutually-incompatible
+combinations at configure time.
+
+| Sanitizer  | GNU | Clang | AppleClang | MSVC |
+|------------|:---:|:-----:|:----------:|:----:|
+| ADDRESS    | ✓   | ✓     | ✓          | ✓    |
+| UNDEFINED  | ✓   | ✓     | ✓          | ✗    |
+| THREAD     | ✓   | ✓     | ✓          | ✗    |
+| MEMORY     | ✗   | ✓     | ✗          | ✗    |
+| LEAK       | ✓   | ✓     | ✓          | ✗    |
+
+`ADDRESS`+`THREAD`, `ADDRESS`+`MEMORY`, and `THREAD`+`MEMORY` cannot be
+combined and are configure-time errors. Any unsupported combination (e.g.
+`MEMORY` on GCC, `UNDEFINED` on MSVC) is also a configure-time error.
+
+```cmake
+include(sanitizers)
+target_enable_sanitizers(
+    TARGET    myTests
+    ADDRESS
+    UNDEFINED
+)
+```
+
+`-fno-omit-frame-pointer` is added automatically on GCC/Clang/AppleClang so
+sanitizer reports include readable stack traces. The MSVC ASan runtime is
+auto-linked, so no link options are needed there. Scope is `INTERFACE` for
+interface-library targets and `PRIVATE` otherwise.
+
 ### generate-version.cmake
 
 Git-based version stamping. On the `release` branch the version is used as-is; on any other branch the short commit hash (and `-dirty` if the working tree is modified) is appended.

@@ -1,0 +1,66 @@
+cmake_minimum_required(VERSION 3.15)
+project(test-sanitizers LANGUAGES NONE)
+
+list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
+set(CMAKE_LIBRARY_SUPPORT_DIR "${MODULES_DIR}" CACHE INTERNAL "" FORCE)
+
+# Test-only override: force the compiler ID the module sees. Real consumers
+# get this from project(... LANGUAGES CXX); this driver uses LANGUAGES NONE
+# so no compiler is invoked, and we set CMAKE_CXX_COMPILER_ID by hand to
+# exercise per-compiler branches without an actual toolchain.
+if(SIMULATED_COMPILER_ID)
+  set(CMAKE_CXX_COMPILER_ID "${SIMULATED_COMPILER_ID}")
+endif()
+
+include(sanitizers)
+
+add_library(dummy INTERFACE)
+
+function(_assert_in_list list_var needle)
+  if(NOT "${needle}" IN_LIST ${list_var})
+    message(FATAL_ERROR "Expected '${needle}' in ${list_var}; got: ${${list_var}}")
+  endif()
+endfunction()
+
+if(TEST_CASE STREQUAL "missing-target")
+  target_enable_sanitizers(ADDRESS)
+elseif(TEST_CASE STREQUAL "missing-sanitizer")
+  target_enable_sanitizers(TARGET dummy)
+elseif(TEST_CASE STREQUAL "gnu-address-undefined" OR
+       TEST_CASE STREQUAL "clang-address-undefined")
+  target_enable_sanitizers(TARGET dummy ADDRESS UNDEFINED)
+  get_target_property(_co dummy INTERFACE_COMPILE_OPTIONS)
+  get_target_property(_lo dummy INTERFACE_LINK_OPTIONS)
+  _assert_in_list(_co "-fsanitize=address,undefined")
+  _assert_in_list(_co "-fno-omit-frame-pointer")
+  _assert_in_list(_lo "-fsanitize=address,undefined")
+elseif(TEST_CASE STREQUAL "gnu-rejects-memory" OR
+       TEST_CASE STREQUAL "appleclang-rejects-memory")
+  target_enable_sanitizers(TARGET dummy MEMORY)
+elseif(TEST_CASE STREQUAL "msvc-address")
+  target_enable_sanitizers(TARGET dummy ADDRESS)
+  get_target_property(_co dummy INTERFACE_COMPILE_OPTIONS)
+  get_target_property(_lo dummy INTERFACE_LINK_OPTIONS)
+  _assert_in_list(_co "/fsanitize=address")
+  if(NOT _lo STREQUAL "_lo-NOTFOUND" AND NOT _lo STREQUAL "")
+    message(FATAL_ERROR "Expected no INTERFACE_LINK_OPTIONS for MSVC; got: ${_lo}")
+  endif()
+elseif(TEST_CASE STREQUAL "msvc-rejects-undefined")
+  target_enable_sanitizers(TARGET dummy UNDEFINED)
+elseif(TEST_CASE STREQUAL "msvc-rejects-thread")
+  target_enable_sanitizers(TARGET dummy THREAD)
+elseif(TEST_CASE STREQUAL "msvc-rejects-memory")
+  target_enable_sanitizers(TARGET dummy MEMORY)
+elseif(TEST_CASE STREQUAL "msvc-rejects-leak")
+  target_enable_sanitizers(TARGET dummy LEAK)
+elseif(TEST_CASE STREQUAL "incompat-address-thread")
+  target_enable_sanitizers(TARGET dummy ADDRESS THREAD)
+elseif(TEST_CASE STREQUAL "incompat-address-memory")
+  target_enable_sanitizers(TARGET dummy ADDRESS MEMORY)
+elseif(TEST_CASE STREQUAL "incompat-thread-memory")
+  target_enable_sanitizers(TARGET dummy THREAD MEMORY)
+elseif(TEST_CASE STREQUAL "unknown-compiler")
+  target_enable_sanitizers(TARGET dummy ADDRESS)
+else()
+  message(FATAL_ERROR "test-sanitizers: unknown TEST_CASE '${TEST_CASE}'")
+endif()

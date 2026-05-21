@@ -63,6 +63,42 @@ set_tests_properties(github-release-dependency-missing-token PROPERTIES
   LABELS    cmake-only
   WILL_FAIL TRUE)
 
+# ---------------------------------------------------------------------------
+# sanitizers tests (one CMakeLists, one TEST_CASE per add_test)
+# ---------------------------------------------------------------------------
+function(_add_sanitizers_case case)
+  cmake_parse_arguments(SC "WILL_FAIL" "COMPILER_ID" "" ${ARGN})
+  set(_args
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-sanitizers"
+    -B "${CMAKE_BINARY_DIR}/sanitizers-${case}-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    "-DTEST_CASE=${case}")
+  if(SC_COMPILER_ID)
+    list(APPEND _args "-DSIMULATED_COMPILER_ID=${SC_COMPILER_ID}")
+  endif()
+  add_test(NAME sanitizers-${case} COMMAND ${CMAKE_COMMAND} ${_args})
+  set_tests_properties(sanitizers-${case} PROPERTIES TIMEOUT 30 LABELS cmake-only)
+  if(SC_WILL_FAIL)
+    set_tests_properties(sanitizers-${case} PROPERTIES WILL_FAIL TRUE)
+  endif()
+endfunction()
+
+_add_sanitizers_case(missing-target        WILL_FAIL)
+_add_sanitizers_case(missing-sanitizer     WILL_FAIL)
+_add_sanitizers_case(gnu-address-undefined     COMPILER_ID GNU)
+_add_sanitizers_case(clang-address-undefined   COMPILER_ID Clang)
+_add_sanitizers_case(gnu-rejects-memory        COMPILER_ID GNU         WILL_FAIL)
+_add_sanitizers_case(appleclang-rejects-memory COMPILER_ID AppleClang  WILL_FAIL)
+_add_sanitizers_case(msvc-address              COMPILER_ID MSVC)
+_add_sanitizers_case(msvc-rejects-undefined    COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-thread       COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-memory       COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-leak         COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(incompat-address-thread   COMPILER_ID GNU         WILL_FAIL)
+_add_sanitizers_case(incompat-address-memory   COMPILER_ID Clang       WILL_FAIL)
+_add_sanitizers_case(incompat-thread-memory    COMPILER_ID Clang       WILL_FAIL)
+_add_sanitizers_case(unknown-compiler          COMPILER_ID Intel       WILL_FAIL)
+
 # generate-version is a cmake -P script; invoke via a wrapper script
 add_test(
   NAME generate-version
