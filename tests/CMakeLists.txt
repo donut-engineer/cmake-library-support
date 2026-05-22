@@ -25,6 +25,22 @@ endfunction()
 # ---------------------------------------------------------------------------
 # Pure-CMake tests (no compiler required)
 # ---------------------------------------------------------------------------
+
+# coverage: argument-validation and compiler-guard paths
+add_test(
+  NAME coverage-unknown-compiler
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
+    -B "${CMAKE_BINARY_DIR}/coverage-unknown-compiler-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DTEST_UNKNOWN_COMPILER=ON
+    -DCMAKE_CXX_COMPILER_ID=SomeUnknown
+)
+set_tests_properties(coverage-unknown-compiler PROPERTIES
+  TIMEOUT   30
+  LABELS    cmake-only
+  WILL_FAIL TRUE)
+
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 
@@ -181,4 +197,53 @@ set_tests_properties(integration-install PROPERTIES
 set_tests_properties(integration-verify PROPERTIES
   FIXTURES_REQUIRED mylib_installed
   TIMEOUT           30
+  LABELS            integration)
+
+# ---------------------------------------------------------------------------
+# GCC integration tests — same mylib project, different compiler + gcovr
+# ---------------------------------------------------------------------------
+add_test(
+  NAME integration-gcc-configure
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/integration/mylib"
+    -B "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DCMAKE_BUILD_TYPE=Debug
+    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_CXX_COMPILER=g++
+)
+add_test(
+  NAME integration-gcc-build
+  COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/mylib-gcc-build" --parallel
+)
+add_test(
+  NAME integration-gcc-test
+  COMMAND ${CMAKE_CTEST_COMMAND}
+    --test-dir "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    --output-on-failure
+)
+add_test(
+  NAME integration-gcc-coverage
+  COMMAND ${CMAKE_COMMAND}
+    --build "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    --target coverage
+)
+
+set_tests_properties(integration-gcc-configure PROPERTIES
+  FIXTURES_SETUP    mylib_gcc_configured
+  TIMEOUT           120
+  LABELS            integration)
+set_tests_properties(integration-gcc-build PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_configured
+  FIXTURES_SETUP    mylib_gcc_built
+  TIMEOUT           300
+  LABELS            integration)
+set_tests_properties(integration-gcc-test PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_built
+  FIXTURES_SETUP    mylib_gcc_tested
+  TIMEOUT           120
+  LABELS            integration)
+set_tests_properties(integration-gcc-coverage PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_tested
+  TIMEOUT           120
   LABELS            integration)

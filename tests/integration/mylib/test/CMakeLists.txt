@@ -15,7 +15,9 @@ include(GoogleTest)
 add_executable(test_mylib test_mylib.cpp)
 target_link_libraries(test_mylib PRIVATE mylib GTest::gtest_main)
 
-# Exercise target_enable_coverage (adds -fprofile-instr-generate -fcoverage-mapping)
+# Exercise target_enable_coverage on both the library and its test driver so that
+# gcovr collects coverage data for the library source, not just the test executable.
+target_enable_coverage(TARGET mylib)
 target_enable_coverage(TARGET test_mylib)
 
 # Exercise target_enable_sanitizers (adds -fsanitize=address,undefined -fno-omit-frame-pointer)

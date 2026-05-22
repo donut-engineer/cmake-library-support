@@ -11,7 +11,9 @@ Every module in this repo serves that specific workflow — coverage reporting, 
 
 - CMake 3.15+ (all modules)
 - CMake 3.18+ (`github-release-dependency.cmake` only — uses `file(ARCHIVE_EXTRACT)`)
-- Clang + LLVM 18 (for `coverage.cmake`, Linux/macOS only). Older LLVM versions may work; CI tests against 18.
+- For `coverage.cmake` (Linux/macOS only), one of:
+  - GCC + gcovr 5+ (`pip install gcovr`)
+  - Clang/AppleClang + LLVM 18 + gcovr 5+ (`pip install gcovr`; LLVM provides `llvm-cov`)
 
 ## Integration
 
@@ -33,21 +35,23 @@ For a complete consumer example that exercises every module — install rules, c
 
 ### coverage.cmake
 
-Clang source-based code coverage with HTML reporting and 100% line coverage enforcement.
-Requires `llvm-profdata` and `llvm-cov` (LLVM 18 preferred). Linux and macOS only.
+Code coverage with HTML reporting and 100% line coverage enforcement. Supports GCC
+and Clang/AppleClang. Requires `gcovr` (`pip install gcovr`); Clang/AppleClang also
+requires `llvm-cov` from LLVM 18. Linux and macOS only.
 
 ```cmake
 include(coverage)
+target_enable_coverage(TARGET myLib)      # apply to every target whose source you want measured
 target_enable_coverage(TARGET myTests)
 add_coverage_report_target(TEST_TARGET myTests)
 ```
 
-Pass `EXCLUDE_REGEX` to override which paths are excluded from the report (matched against full file paths). The default excludes `googletest`, `googlemock`, `/usr/`, and any path containing `/tests/`:
+Pass `EXCLUDE_REGEX` to override which paths are excluded from the report (matched against full file paths). The default excludes `googletest`, `googlemock`, `/usr/`, and any path containing a directory named `test`:
 
 ```cmake
 add_coverage_report_target(
     TEST_TARGET myTests
-    EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/tests/.*"
+    EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/test/.*"
 )
 ```
 
