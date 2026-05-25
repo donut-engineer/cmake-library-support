@@ -3,7 +3,7 @@
 [![CI](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml/badge.svg)](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as six independently-includeable modules.
+Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as seven independently-includeable modules.
 
 Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
@@ -23,7 +23,7 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v2.1.3
+    GIT_TAG v2.2.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
 # CMAKE_LIBRARY_SUPPORT_DIR and CMAKE_MODULE_PATH are now set automatically
