@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-05-25
+
 ### Added
 - `sanitizers.cmake` module with `target_enable_sanitizers()` for enabling AddressSanitizer, UndefinedBehaviorSanitizer, ThreadSanitizer, MemorySanitizer, and LeakSanitizer with compiler-aware flags (GCC, Clang, AppleClang, MSVC). Validates unsupported and mutually-incompatible combinations at configure time.
 - `coverage.cmake`: GCC support. Both `target_enable_coverage` and
@@ -134,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...v2.2.0
 [2.1.3]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...v2.1.1
