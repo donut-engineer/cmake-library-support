@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-05-25
+
+### Added
+- `sanitizers.cmake` module with `target_enable_sanitizers()` for enabling AddressSanitizer, UndefinedBehaviorSanitizer, ThreadSanitizer, MemorySanitizer, and LeakSanitizer with compiler-aware flags (GCC, Clang, AppleClang, MSVC). Validates unsupported and mutually-incompatible combinations at configure time.
+- `coverage.cmake`: GCC support. Both `target_enable_coverage` and
+  `add_coverage_report_target` now support `GNU` in addition to `Clang` and
+  `AppleClang`. A new `integration-gcc-*` fixture chain in the test suite exercises
+  the GCC path on CI.
+
+### Changed
+- `coverage.cmake`: switched reporting backend from `llvm-profdata`/`llvm-cov` to
+  `gcovr` (BSD-3-Clause, `pip install gcovr`). Both GCC and Clang/AppleClang now use
+  `gcovr`; Clang/AppleClang still requires `llvm-cov` as the gcov backend
+  (`--gcov-executable`). The `llvm-profdata` merge step and bash glob/AWK pipeline
+  are removed.
+- `coverage.cmake`: `target_enable_coverage` now uses `--coverage` for all supported
+  compilers (previously `-fprofile-instr-generate -fcoverage-mapping` for Clang).
+- `coverage.cmake`: `target_enable_coverage` and `add_coverage_report_target` now emit
+  `FATAL_ERROR` for unsupported compilers instead of silently applying incorrect flags.
+- `coverage.cmake`: default `EXCLUDE_REGEX` changed from `.*/tests/.*` to `.*/test/.*`
+  (singular) so that library source files under a `tests/` project root are not
+  inadvertently excluded from coverage measurement.
+- CI: Clang integration job (`integration-tests-clang`) now installs `gcovr` in
+  addition to LLVM 18. A new `integration-tests-gcc` job runs in parallel.
+
 ## [2.1.3] - 2026-05-09
 
 ### Fixed
@@ -111,7 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...v2.2.0
 [2.1.3]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.0...v2.1.1

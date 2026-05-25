@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ['**']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cmake-only-tests:
     name: Pure CMake Tests (${{ matrix.os }})
@@ -26,16 +30,16 @@ jobs:
       - name: Run pure-CMake tests
         run: ctest --test-dir tests/build --output-on-failure -L cmake-only
 
-  integration-tests:
-    name: Integration Tests (Clang + LLVM 18)
+  integration-tests-clang:
+    name: Integration Tests (Clang + LLVM 18 + gcovr)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install LLVM 18
+      - name: Install Clang, LLVM 18, and gcovr
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev
+          sudo apt-get install -y clang-18 llvm-18 libclang-rt-18-dev gcovr
           sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-18   100
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100
 
@@ -44,8 +48,8 @@ jobs:
           cmake -S tests -B tests/build \
             -DMODULES_DIR="${{ github.workspace }}/cmake"
 
-      - name: Run all tests
-        run: ctest --test-dir tests/build --output-on-failure
+      - name: Run Clang integration tests
+        run: ctest --test-dir tests/build --output-on-failure -R "^integration-" -E "gcc"
 
       - name: Install to temp prefix
         run: |
@@ -57,10 +61,37 @@ jobs:
           test -f tests/build/mylib-install/lib/cmake/mylib/mylib-config.cmake
           test -f tests/build/mylib-install/include/mylib/mylib.hpp
 
-      - name: Upload coverage report
+      - name: Upload Clang coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html
+          name: coverage-html-clang
           path: tests/build/mylib-build/coverage/html/
+          if-no-files-found: error
+
+  integration-tests-gcc:
+    name: Integration Tests (GCC + gcovr)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GCC and gcovr
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y g++ gcovr
+
+      - name: Configure
+        run: |
+          cmake -S tests -B tests/build \
+            -DMODULES_DIR="${{ github.workspace }}/cmake"
+
+      - name: Run GCC integration tests
+        run: ctest --test-dir tests/build --output-on-failure -R "^integration-gcc"
+
+      - name: Upload GCC coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html-gcc
+          path: tests/build/mylib-gcc-build/coverage/html/
           if-no-files-found: error

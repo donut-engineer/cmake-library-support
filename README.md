@@ -3,7 +3,7 @@
 [![CI](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml/badge.svg)](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as six independently-includeable modules.
+Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as seven independently-includeable modules.
 
 Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
 
@@ -11,7 +11,9 @@ Every module in this repo serves that specific workflow — coverage reporting, 
 
 - CMake 3.15+ (all modules)
 - CMake 3.18+ (`github-release-dependency.cmake` only — uses `file(ARCHIVE_EXTRACT)`)
-- Clang + LLVM 18 (for `coverage.cmake`, Linux/macOS only). Older LLVM versions may work; CI tests against 18.
+- For `coverage.cmake` (Linux/macOS only), one of:
+  - GCC + gcovr 5+ (`pip install gcovr`)
+  - Clang/AppleClang + LLVM 18 + gcovr 5+ (`pip install gcovr`; LLVM provides `llvm-cov`)
 
 ## Integration
 
@@ -21,7 +23,7 @@ Add to your project via FetchContent:
 include(FetchContent)
 FetchContent_Declare(cmake_library_support
     GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-    GIT_TAG v2.1.3
+    GIT_TAG v2.2.0
 )
 FetchContent_MakeAvailable(cmake_library_support)
 # CMAKE_LIBRARY_SUPPORT_DIR and CMAKE_MODULE_PATH are now set automatically
@@ -33,21 +35,23 @@ For a complete consumer example that exercises every module — install rules, c
 
 ### coverage.cmake
 
-Clang source-based code coverage with HTML reporting and 100% line coverage enforcement.
-Requires `llvm-profdata` and `llvm-cov` (LLVM 18 preferred). Linux and macOS only.
+Code coverage with HTML reporting and 100% line coverage enforcement. Supports GCC
+and Clang/AppleClang. Requires `gcovr` (`pip install gcovr`); Clang/AppleClang also
+requires `llvm-cov` from LLVM 18. Linux and macOS only.
 
 ```cmake
 include(coverage)
+target_enable_coverage(TARGET myLib)      # apply to every target whose source you want measured
 target_enable_coverage(TARGET myTests)
 add_coverage_report_target(TEST_TARGET myTests)
 ```
 
-Pass `EXCLUDE_REGEX` to override which paths are excluded from the report (matched against full file paths). The default excludes `googletest`, `googlemock`, `/usr/`, and any path containing `/tests/`:
+Pass `EXCLUDE_REGEX` to override which paths are excluded from the report (matched against full file paths). The default excludes `googletest`, `googlemock`, `/usr/`, and any path containing a directory named `test`:
 
 ```cmake
 add_coverage_report_target(
     TEST_TARGET myTests
-    EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/tests/.*"
+    EXCLUDE_REGEX ".*/googletest/.*|.*/googlemock/.*|/usr/.*|.*/test/.*"
 )
 ```
 
@@ -58,6 +62,38 @@ cmake --build build --target coverage
 ```
 
 The build fails if line coverage drops below 100%. The HTML report is written to `build/coverage/html/index.html`.
+
+### sanitizers.cmake
+
+Enables compiler/linker sanitizer flags on a target with the right syntax for
+the active compiler. Validates unsupported and mutually-incompatible
+combinations at configure time.
+
+| Sanitizer  | GNU | Clang | AppleClang | MSVC |
+|------------|:---:|:-----:|:----------:|:----:|
+| ADDRESS    | ✓   | ✓     | ✓          | ✓    |
+| UNDEFINED  | ✓   | ✓     | ✓          | ✗    |
+| THREAD     | ✓   | ✓     | ✓          | ✗    |
+| MEMORY     | ✗   | ✓     | ✗          | ✗    |
+| LEAK       | ✓   | ✓     | ✓          | ✗    |
+
+`ADDRESS`+`THREAD`, `ADDRESS`+`MEMORY`, and `THREAD`+`MEMORY` cannot be
+combined and are configure-time errors. Any unsupported combination (e.g.
+`MEMORY` on GCC, `UNDEFINED` on MSVC) is also a configure-time error.
+
+```cmake
+include(sanitizers)
+target_enable_sanitizers(
+    TARGET    myTests
+    ADDRESS
+    UNDEFINED
+)
+```
+
+`-fno-omit-frame-pointer` is added automatically on GCC/Clang/AppleClang so
+sanitizer reports include readable stack traces. The MSVC ASan runtime is
+auto-linked, so no link options are needed there. Scope is `INTERFACE` for
+interface-library targets and `PRIVATE` otherwise.
 
 ### generate-version.cmake
 
