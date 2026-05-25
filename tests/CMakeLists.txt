@@ -25,6 +25,22 @@ endfunction()
 # ---------------------------------------------------------------------------
 # Pure-CMake tests (no compiler required)
 # ---------------------------------------------------------------------------
+
+# coverage: argument-validation and compiler-guard paths
+add_test(
+  NAME coverage-unknown-compiler
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
+    -B "${CMAKE_BINARY_DIR}/coverage-unknown-compiler-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DTEST_UNKNOWN_COMPILER=ON
+    -DCMAKE_CXX_COMPILER_ID=SomeUnknown
+)
+set_tests_properties(coverage-unknown-compiler PROPERTIES
+  TIMEOUT   30
+  LABELS    cmake-only
+  WILL_FAIL TRUE)
+
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 
@@ -62,6 +78,42 @@ set_tests_properties(github-release-dependency-missing-token PROPERTIES
   TIMEOUT   30
   LABELS    cmake-only
   WILL_FAIL TRUE)
+
+# ---------------------------------------------------------------------------
+# sanitizers tests (one CMakeLists, one TEST_CASE per add_test)
+# ---------------------------------------------------------------------------
+function(_add_sanitizers_case case)
+  cmake_parse_arguments(SC "WILL_FAIL" "COMPILER_ID" "" ${ARGN})
+  set(_args
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-sanitizers"
+    -B "${CMAKE_BINARY_DIR}/sanitizers-${case}-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    "-DTEST_CASE=${case}")
+  if(SC_COMPILER_ID)
+    list(APPEND _args "-DSIMULATED_COMPILER_ID=${SC_COMPILER_ID}")
+  endif()
+  add_test(NAME sanitizers-${case} COMMAND ${CMAKE_COMMAND} ${_args})
+  set_tests_properties(sanitizers-${case} PROPERTIES TIMEOUT 30 LABELS cmake-only)
+  if(SC_WILL_FAIL)
+    set_tests_properties(sanitizers-${case} PROPERTIES WILL_FAIL TRUE)
+  endif()
+endfunction()
+
+_add_sanitizers_case(missing-target        WILL_FAIL)
+_add_sanitizers_case(missing-sanitizer     WILL_FAIL)
+_add_sanitizers_case(gnu-address-undefined     COMPILER_ID GNU)
+_add_sanitizers_case(clang-address-undefined   COMPILER_ID Clang)
+_add_sanitizers_case(gnu-rejects-memory        COMPILER_ID GNU         WILL_FAIL)
+_add_sanitizers_case(appleclang-rejects-memory COMPILER_ID AppleClang  WILL_FAIL)
+_add_sanitizers_case(msvc-address              COMPILER_ID MSVC)
+_add_sanitizers_case(msvc-rejects-undefined    COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-thread       COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-memory       COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(msvc-rejects-leak         COMPILER_ID MSVC        WILL_FAIL)
+_add_sanitizers_case(incompat-address-thread   COMPILER_ID GNU         WILL_FAIL)
+_add_sanitizers_case(incompat-address-memory   COMPILER_ID Clang       WILL_FAIL)
+_add_sanitizers_case(incompat-thread-memory    COMPILER_ID Clang       WILL_FAIL)
+_add_sanitizers_case(unknown-compiler          COMPILER_ID Intel       WILL_FAIL)
 
 # generate-version is a cmake -P script; invoke via a wrapper script
 add_test(
@@ -145,4 +197,53 @@ set_tests_properties(integration-install PROPERTIES
 set_tests_properties(integration-verify PROPERTIES
   FIXTURES_REQUIRED mylib_installed
   TIMEOUT           30
+  LABELS            integration)
+
+# ---------------------------------------------------------------------------
+# GCC integration tests — same mylib project, different compiler + gcovr
+# ---------------------------------------------------------------------------
+add_test(
+  NAME integration-gcc-configure
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/integration/mylib"
+    -B "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DCMAKE_BUILD_TYPE=Debug
+    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_CXX_COMPILER=g++
+)
+add_test(
+  NAME integration-gcc-build
+  COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}/mylib-gcc-build" --parallel
+)
+add_test(
+  NAME integration-gcc-test
+  COMMAND ${CMAKE_CTEST_COMMAND}
+    --test-dir "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    --output-on-failure
+)
+add_test(
+  NAME integration-gcc-coverage
+  COMMAND ${CMAKE_COMMAND}
+    --build "${CMAKE_BINARY_DIR}/mylib-gcc-build"
+    --target coverage
+)
+
+set_tests_properties(integration-gcc-configure PROPERTIES
+  FIXTURES_SETUP    mylib_gcc_configured
+  TIMEOUT           120
+  LABELS            integration)
+set_tests_properties(integration-gcc-build PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_configured
+  FIXTURES_SETUP    mylib_gcc_built
+  TIMEOUT           300
+  LABELS            integration)
+set_tests_properties(integration-gcc-test PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_built
+  FIXTURES_SETUP    mylib_gcc_tested
+  TIMEOUT           120
+  LABELS            integration)
+set_tests_properties(integration-gcc-coverage PROPERTIES
+  FIXTURES_REQUIRED mylib_gcc_tested
+  TIMEOUT           120
   LABELS            integration)

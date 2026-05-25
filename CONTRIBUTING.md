@@ -28,19 +28,22 @@ Only modules that serve a C++ library author's build and release pipeline belong
 The repo ships two test suites under `tests/`:
 
 - **Pure-CMake tests** (`-L cmake-only`) — exercise the modules through `cmake --configure` and `cmake -P` without a C++ compiler.
-- **Integration tests** — build a minimal consumer library (`tests/integration/mylib/`) with Clang + LLVM 18, run its GoogleTest suite, and produce a 100% line-coverage report.
+- **Integration tests** — build a minimal consumer library (`tests/integration/mylib/`) with
+  both Clang + LLVM 18 and GCC, run its GoogleTest suite, and produce a 100% line-coverage
+  report via `gcovr`.
 
 Run locally:
 
 ```bash
 cmake -S tests -B tests/build -G Ninja -DMODULES_DIR=$PWD/cmake
-ctest --test-dir tests/build --output-on-failure -L cmake-only   # fast, no compiler needed
-ctest --test-dir tests/build --output-on-failure                 # full suite, requires Clang + LLVM 18
+ctest --test-dir tests/build --output-on-failure -L cmake-only      # fast, no compiler needed
+ctest --test-dir tests/build --output-on-failure -R "^integration-gcc"     # GCC path (requires g++ + gcovr)
+ctest --test-dir tests/build --output-on-failure -R "^integration-" -E "gcc" # Clang path (requires clang + llvm-cov + gcovr)
 ```
 
 > **Windows:** `-G Ninja` is required. Without it CMake selects the Visual Studio generator (multi-config), and `ctest` reports "No tests were found" unless `-C <config>` is also passed. Ninja is pre-installed with Visual Studio.
 
-CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 + Windows for the pure-CMake suite; Ubuntu 24.04 with Clang 18 for the integration suite). See `.github/workflows/ci.yml`.
+CI runs both suites on every PR (Ubuntu 24.04 + macOS 14 + Windows for the pure-CMake suite; Ubuntu 24.04 with GCC + gcovr and separately with Clang 18 + llvm-cov + gcovr for the two integration jobs). See `.github/workflows/ci.yml`.
 
 **Known testing boundary:** The `STATIC_TARGET` and `SHARED_TARGET` permutations of `install-rules.cmake` require a C++ compiler to configure and are only covered by the integration test (which exercises all three target types together). The pure-CMake suite covers only the `INTERFACE_TARGET` path.
 
