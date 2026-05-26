@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- GitHub Pages landing page (`index.html`) with feature overview, quick-start snippet, and automated deployment via `.github/workflows/pages.yml` on pushes to `release`.
+
 ## [2.2.0] - 2026-05-25
 
 ### Added
