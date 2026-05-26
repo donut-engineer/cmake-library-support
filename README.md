@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml/badge.svg)](https://github.com/donut-engineer/cmake-library-support/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-github--pages-blue)](https://donut-engineer.github.io/cmake-library-support/)
 
 Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as seven independently-includeable modules.
 
