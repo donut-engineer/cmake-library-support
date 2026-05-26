@@ -124,13 +124,13 @@
 
     <section>
       <h2>Quick Start</h2>
-      <p>Add to any CMake project via <code>FetchContent</code>:</p>
+      <p>Add to any CMake project via <code>FetchContent</code> (replace <code>vX.Y.Z</code> with the <a href="https://github.com/donut-engineer/cmake-library-support/blob/develop/CHANGELOG.md">latest release</a>):</p>
       <pre><code>include(FetchContent)
 
 FetchContent_Declare(
   cmake-library-support
   GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
-  GIT_TAG        v2.2.0
+  GIT_TAG        vX.Y.Z
 )
 FetchContent_MakeAvailable(cmake-library-support)
 
