@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Seven independently-usable CMake modules for C++ library authors — coverage, sanitizers, version stamping, install rules, packaging, and more.">
+  <title>cmake-library-support</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    nav.container-fluid {
+      background-color: #C4687E;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    nav.container-fluid ul { margin-bottom: 0; }
+    nav.container-fluid li { padding-top: 0; padding-bottom: 0; }
+    nav.container-fluid img { width: 80px; height: 80px; border: none; border-radius: 0; flex-shrink: 0; margin-right: 0.75rem; vertical-align: middle; }
+    nav.container-fluid a,
+    nav.container-fluid strong { color: #fff; }
+    nav .brand { display: inline-flex; flex-direction: column; vertical-align: middle; line-height: 1.3; }
+    nav .brand strong { font-size: 1.4rem; }
+    nav .brand small { opacity: 0.85; font-weight: normal; font-size: 0.9rem; }
+    nav.container-fluid a.nav-button {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: var(--pico-border-radius);
+      color: #fff;
+      text-decoration: none;
+    }
+    nav.container-fluid a.nav-button:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: #fff;
+    }
+    main section h2 { font-size: 1.4rem; }
+    main section h3 { font-size: 1.15rem; }
+    main section p, main section li { font-size: 0.9rem; }
+    main section {
+      border: 2px solid #bbb;
+      border-radius: var(--pico-border-radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .features article { margin-bottom: 0; }
+    footer .links {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul>
+      <li>
+        <img src="assets/donut-engineer-icon.png" alt="donut-engineer logo">
+        <span class="brand">
+          <strong>cmake-library-support</strong>
+          <small>Production-grade CMake utilities for C++ library authors.</small>
+        </span>
+      </li>
+    </ul>
+    <ul>
+      <li><a href="https://github.com/donut-engineer/cmake-library-support/blob/develop/CHANGELOG.md">Changelog</a></li>
+      <li><a href="https://github.com/donut-engineer/cmake-library-support" class="nav-button">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <section>
+      <h2>What is this?</h2>
+      <p>
+        Writing a redistributable C++ library requires the same CMake boilerplate on every project: coverage reporting,
+        compiler sanitizers, version stamping, install rules, config-mode package files, and release packaging.
+        <code>cmake-library-support</code> packages all of that as seven independently-includable modules consumed
+        via <code>FetchContent</code>.
+      </p>
+      <p>
+        There is no installation step. Add the dependency, include only the modules you need, and the boilerplate is done.
+        Every module targets the specific workflow of a C++ library author — nothing more.
+      </p>
+    </section>
+
+    <section>
+      <h2>What you get</h2>
+      <div class="features">
+        <article>
+          <h3>Code Coverage</h3>
+          <p>Instruments builds, runs tests, and generates an HTML report via gcovr. Enforces 100% line coverage — the build fails if any line goes untested. Supports GCC and Clang 18 on Linux.</p>
+        </article>
+        <article>
+          <h3>Compiler Sanitizers</h3>
+          <p>Applies AddressSanitizer, UndefinedBehaviorSanitizer, ThreadSanitizer, MemorySanitizer, or LeakSanitizer with compile-time validation that the requested sanitizer is supported by the active compiler.</p>
+        </article>
+        <article>
+          <h3>Git Version Stamping</h3>
+          <p>Appends the short commit hash and a <code>-dirty</code> suffix to the project version on non-release branches, keeping every debug build traceable back to its exact source state.</p>
+        </article>
+        <article>
+          <h3>GitHub Release Assets</h3>
+          <p>Downloads and caches private GitHub release assets by SHA256 checksum. Automatically sanitizes <code>GH_TOKEN</code> from any error output so credentials never appear in CI logs.</p>
+        </article>
+        <article>
+          <h3>CMake Config Generation</h3>
+          <p>Generates a <code>&lt;package&gt;-config.cmake.in</code> template for <code>configure_package_config_file()</code>, enabling <code>find_package()</code> support in downstream projects with no manual template authoring.</p>
+        </article>
+        <article>
+          <h3>Install Rules</h3>
+          <p>Installs static, shared, and interface library targets with correct CMake export sets and config-mode package files — ready for downstream consumption immediately after <code>cmake --install</code>.</p>
+        </article>
+        <article>
+          <h3>CPack Integration</h3>
+          <p>Configures CPack to produce named archives — <code>.tar.gz</code> on Linux and macOS, <code>.zip</code> on Windows — with system and architecture embedded in the filename.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Quick Start</h2>
+      <p>Add to any CMake project via <code>FetchContent</code> (replace <code>vX.Y.Z</code> with the <a href="https://github.com/donut-engineer/cmake-library-support/blob/develop/CHANGELOG.md">latest release</a>):</p>
+      <pre><code>include(FetchContent)
+
+FetchContent_Declare(
+  cmake-library-support
+  GIT_REPOSITORY https://github.com/donut-engineer/cmake-library-support.git
+  GIT_TAG        vX.Y.Z
+)
+FetchContent_MakeAvailable(cmake-library-support)
+
+# Include only the modules you need
+include(coverage)
+include(sanitizers)
+include(install-rules)
+include(package-rules)</code></pre>
+      <p>After <code>FetchContent_MakeAvailable</code>, modules are available on <code>CMAKE_MODULE_PATH</code> automatically.</p>
+    </section>
+
+    <section>
+      <h2>Requirements</h2>
+      <p><strong>CMake 3.15+</strong> for all modules. <strong>CMake 3.18+</strong> required for <code>github-release-dependency</code> (<code>file(ARCHIVE_EXTRACT)</code>).</p>
+      <p>Coverage requires <strong>gcovr 5+</strong> (<code>pip install gcovr</code>) and either GCC or Clang 18 on Linux or macOS.</p>
+    </section>
+  </main>
+
+  <footer class="container">
+    <hr>
+    <div class="links">
+      <span>
+        <a href="https://github.com/donut-engineer/cmake-library-support">GitHub</a> &middot;
+        <a href="https://github.com/donut-engineer/cmake-library-support/blob/develop/CHANGELOG.md">Changelog</a>
+      </span>
+      <span>
+        Built by <a href="https://github.com/donut-engineer">donut-engineer</a> &middot;
+        <a href="https://github.com/donut-engineer/cmake-library-support/blob/develop/LICENSE">MIT License</a>
+      </span>
+    </div>
+  </footer>
+</body>
+</html>
