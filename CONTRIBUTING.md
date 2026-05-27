@@ -14,7 +14,7 @@
 
 ## Module scope
 
-Only modules that serve a C++ library author's build and release pipeline belong here — coverage reporting, version stamping, dependency fetching, install/package/find-module generation. If a module doesn't fit that description, it doesn't fit this repo.
+Only modules that serve a C or C++ library author's build and release pipeline belong here — coverage reporting, version stamping, dependency fetching, install/package/find-module generation. If a module doesn't fit that description, it doesn't fit this repo.
 
 ## Style conventions
 
@@ -28,9 +28,11 @@ Only modules that serve a C++ library author's build and release pipeline belong
 The repo ships two test suites under `tests/`:
 
 - **Pure-CMake tests** (`-L cmake-only`) — exercise the modules through `cmake --configure` and `cmake -P` without a C++ compiler.
-- **Integration tests** — build a minimal consumer library (`tests/integration/mylib/`) with
-  both Clang + LLVM 18 and GCC, run its GoogleTest suite, and produce a 100% line-coverage
-  report via `gcovr`.
+- **Integration tests** — build the consumer library in `tests/integration/mylib/` with
+  both Clang + LLVM 18 and GCC, and produce a 100% line-coverage report via `gcovr`. The
+  same library source is configured twice: as a C++ project (`CONSUMER_LANG=CXX`, GoogleTest
+  driver) and as a C project (`CONSUMER_LANG=C`, plain-C driver), so the modules are proven
+  for both `project(... LANGUAGES CXX)` and `LANGUAGES C` consumers.
 
 Run locally:
 

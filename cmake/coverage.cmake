@@ -5,9 +5,15 @@ function(target_enable_coverage)
     if(NOT ARG_TARGET)
         message(FATAL_ERROR "target_enable_coverage: TARGET is required")
     endif()
-    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+    # Prefer the C++ compiler ID; fall back to C so C-only projects work too.
+    if(CMAKE_CXX_COMPILER_ID)
+        set(_compiler_id "${CMAKE_CXX_COMPILER_ID}")
+    else()
+        set(_compiler_id "${CMAKE_C_COMPILER_ID}")
+    endif()
+    if(NOT _compiler_id MATCHES "^(GNU|Clang|AppleClang)$")
         message(FATAL_ERROR
-            "target_enable_coverage: unsupported compiler '${CMAKE_CXX_COMPILER_ID}' "
+            "target_enable_coverage: unsupported compiler '${_compiler_id}' "
             "(supported: GNU, Clang, AppleClang)")
     endif()
     target_compile_options(${ARG_TARGET} PRIVATE --coverage)
@@ -38,9 +44,15 @@ function(add_coverage_report_target)
         message(FATAL_ERROR "add_coverage_report_target: TEST_TARGET is required")
     endif()
 
-    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+    # Prefer the C++ compiler ID; fall back to C so C-only projects work too.
+    if(CMAKE_CXX_COMPILER_ID)
+        set(_compiler_id "${CMAKE_CXX_COMPILER_ID}")
+    else()
+        set(_compiler_id "${CMAKE_C_COMPILER_ID}")
+    endif()
+    if(NOT _compiler_id MATCHES "^(GNU|Clang|AppleClang)$")
         message(FATAL_ERROR
-            "add_coverage_report_target: unsupported compiler '${CMAKE_CXX_COMPILER_ID}' "
+            "add_coverage_report_target: unsupported compiler '${_compiler_id}' "
             "(supported: GNU, Clang, AppleClang)")
     endif()
 
@@ -56,7 +68,7 @@ function(add_coverage_report_target)
 
     # Clang/AppleClang use llvm-cov as the gcov backend; GNU uses the system gcov.
     set(_gcov_executable_arg "")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
+    if(_compiler_id MATCHES "^(Clang|AppleClang)$")
         find_program(LLVM_COV_EXE NAMES llvm-cov-18 llvm-cov)
         if(NOT LLVM_COV_EXE)
             message(WARNING "llvm-cov not found — 'coverage' target will not be available")

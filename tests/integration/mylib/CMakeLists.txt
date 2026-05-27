@@ -1,8 +1,25 @@
 cmake_minimum_required(VERSION 3.15)
-project(mylib VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# The library source (src/mylib.c) is plain C, valid as both C and C++. The test
+# suite configures this one consumer twice: as a C++ project (CONSUMER_LANG=CXX,
+# GoogleTest driver) and as a C project (CONSUMER_LANG=C, plain-C driver), so the
+# modules are exercised for both languages without duplicating the library.
+if(NOT CONSUMER_LANG)
+  set(CONSUMER_LANG CXX)
+endif()
+
+project(mylib VERSION 1.0.0 LANGUAGES ${CONSUMER_LANG})
+
+if(CONSUMER_LANG STREQUAL "CXX")
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  # Compile the .c source with the C++ compiler so this build is pure C++ and
+  # the modules see CMAKE_CXX_COMPILER_ID (the C++ code path).
+  set_source_files_properties(src/mylib.c PROPERTIES LANGUAGE CXX)
+else()
+  set(CMAKE_C_STANDARD 11)
+  set(CMAKE_C_STANDARD_REQUIRED ON)
+endif()
 
 enable_testing()
 
@@ -16,8 +33,8 @@ include(config-template)
 include(install-rules)
 
 # Three library targets required by library_install_rules
-add_library(mylib        STATIC src/mylib.cpp)
-add_library(mylibShared  SHARED src/mylib.cpp)
+add_library(mylib        STATIC src/mylib.c)
+add_library(mylibShared  SHARED src/mylib.c)
 add_library(mylibIface   INTERFACE)
 
 foreach(_t mylib mylibShared)

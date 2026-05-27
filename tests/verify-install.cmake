@@ -9,7 +9,7 @@ endif()
 set(_expected_files
     "${INSTALL_PREFIX}/lib/cmake/mylib/mylib-config.cmake"
     "${INSTALL_PREFIX}/lib/cmake/mylib/mylib-config-version.cmake"
-    "${INSTALL_PREFIX}/include/mylib/mylib.hpp"
+    "${INSTALL_PREFIX}/include/mylib/mylib.h"
 )
 
 foreach(_f ${_expected_files})
