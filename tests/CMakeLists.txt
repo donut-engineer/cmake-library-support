@@ -56,6 +56,21 @@ set_tests_properties(coverage-c-fallback PROPERTIES
   TIMEOUT 30
   LABELS  cmake-only)
 
+# coverage: optional NAME argument creates a custom-named report target instead
+# of the default 'coverage' target.
+add_test(
+  NAME coverage-custom-target-name
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
+    -B "${CMAKE_BINARY_DIR}/coverage-custom-target-name-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DRUN_NAMED_REPORT_TARGET=ON
+    -DCMAKE_CXX_COMPILER_ID=GNU
+)
+set_tests_properties(coverage-custom-target-name PROPERTIES
+  TIMEOUT 30
+  LABELS  cmake-only)
+
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 

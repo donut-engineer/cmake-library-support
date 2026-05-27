@@ -58,13 +58,20 @@ add_coverage_report_target(
 )
 ```
 
-Run the `coverage` target after building:
+The target is named `coverage` by default. Pass `NAME` to choose a different name, which is useful when a project needs more than one report target (one `add_coverage_report_target` call per name):
+
+```cmake
+add_coverage_report_target(TEST_TARGET unitTests        NAME unit-coverage)
+add_coverage_report_target(TEST_TARGET integrationTests NAME integration-coverage)
+```
+
+Run the report target after building (substitute your `NAME`, default `coverage`):
 
 ```bash
 cmake --build build --target coverage
 ```
 
-The build fails if line coverage drops below 100%. The HTML report is written to `build/coverage/html/index.html`.
+The build fails if line coverage drops below 100%. The HTML report is written to `build/<NAME>/html/index.html` (`build/coverage/html/index.html` by default).
 
 ### sanitizers.cmake
 

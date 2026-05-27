@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `coverage.cmake`: `add_coverage_report_target` accepts an optional `NAME`
+  argument (default `coverage`) that names the generated custom target and its
+  `build/<NAME>/html` report directory, so a project can create more than one
+  coverage report target. The previous hardcoded `coverage` target name is
+  preserved as the default.
 - C library support. The `integration/mylib` consumer is now configured twice —
   once as a C++ project (`CONSUMER_LANG=CXX`) and once as a C project
   (`CONSUMER_LANG=C`) — from a single shared library source, on both Clang
