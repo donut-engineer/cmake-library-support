@@ -4,12 +4,17 @@ project(test-sanitizers LANGUAGES NONE)
 list(APPEND CMAKE_MODULE_PATH "${MODULES_DIR}")
 set(CMAKE_LIBRARY_SUPPORT_DIR "${MODULES_DIR}" CACHE INTERNAL "" FORCE)
 
-# Test-only override: force the compiler ID the module sees. Real consumers
-# get this from project(... LANGUAGES CXX); this driver uses LANGUAGES NONE
-# so no compiler is invoked, and we set CMAKE_CXX_COMPILER_ID by hand to
-# exercise per-compiler branches without an actual toolchain.
+# Test-only override: force the compiler ID the module sees. Real consumers get
+# this from project(); this driver uses LANGUAGES NONE so no compiler is invoked,
+# and we set the id by hand to exercise per-compiler branches without a toolchain.
+# By default the value is the C++ id; with SIMULATED_C it is set as the C id
+# instead (leaving the C++ id empty) to exercise the C-only fallback.
 if(SIMULATED_COMPILER_ID)
-  set(CMAKE_CXX_COMPILER_ID "${SIMULATED_COMPILER_ID}")
+  if(SIMULATED_C)
+    set(CMAKE_C_COMPILER_ID "${SIMULATED_COMPILER_ID}")
+  else()
+    set(CMAKE_CXX_COMPILER_ID "${SIMULATED_COMPILER_ID}")
+  endif()
 endif()
 
 include(sanitizers)
@@ -27,7 +32,9 @@ if(TEST_CASE STREQUAL "missing-target")
 elseif(TEST_CASE STREQUAL "missing-sanitizer")
   target_enable_sanitizers(TARGET dummy)
 elseif(TEST_CASE STREQUAL "gnu-address-undefined" OR
-       TEST_CASE STREQUAL "clang-address-undefined")
+       TEST_CASE STREQUAL "clang-address-undefined" OR
+       TEST_CASE STREQUAL "c-gnu-address-undefined" OR
+       TEST_CASE STREQUAL "c-clang-address-undefined")
   target_enable_sanitizers(TARGET dummy ADDRESS UNDEFINED)
   get_target_property(_co dummy INTERFACE_COMPILE_OPTIONS)
   get_target_property(_lo dummy INTERFACE_LINK_OPTIONS)

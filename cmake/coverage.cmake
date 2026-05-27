@@ -5,16 +5,22 @@ function(target_enable_coverage)
     if(NOT ARG_TARGET)
         message(FATAL_ERROR "target_enable_coverage: TARGET is required")
     endif()
-    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+    # Prefer the C++ compiler ID; fall back to C so C-only projects work too.
+    if(CMAKE_CXX_COMPILER_ID)
+        set(_compiler_id "${CMAKE_CXX_COMPILER_ID}")
+    else()
+        set(_compiler_id "${CMAKE_C_COMPILER_ID}")
+    endif()
+    if(NOT _compiler_id MATCHES "^(GNU|Clang|AppleClang)$")
         message(FATAL_ERROR
-            "target_enable_coverage: unsupported compiler '${CMAKE_CXX_COMPILER_ID}' "
+            "target_enable_coverage: unsupported compiler '${_compiler_id}' "
             "(supported: GNU, Clang, AppleClang)")
     endif()
     target_compile_options(${ARG_TARGET} PRIVATE --coverage)
     target_link_options(${ARG_TARGET} PRIVATE --coverage)
 endfunction()
 
-# Creates a 'coverage' custom target that:
+# Creates a custom target (named 'coverage' by default) that:
 #   1. Runs tests via CTest; --coverage instrumentation writes .gcda files automatically
 #   2. Generates an HTML report with gcovr, excluding third-party paths
 #      (googletest, googlemock) and system headers
@@ -27,20 +33,33 @@ endfunction()
 # Required argument:
 #   TEST_TARGET    — the CMake test executable target (must be built before running)
 #
-# Optional argument:
+# Optional arguments:
+#   NAME           — name of the custom target to create. Defaults to "coverage".
+#                    The HTML report is written to "${CMAKE_BINARY_DIR}/<NAME>/html",
+#                    so distinct names allow multiple independent report targets.
 #   EXCLUDE_REGEX  — regex passed to gcovr --exclude (matched against full file paths).
 #                    Defaults to excluding googletest, googlemock, /usr/, and any path
 #                    containing a directory named "test".
 function(add_coverage_report_target)
-    cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX" "" ${ARGN})
+    cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX;NAME" "" ${ARGN})
 
     if(NOT ARG_TEST_TARGET)
         message(FATAL_ERROR "add_coverage_report_target: TEST_TARGET is required")
     endif()
 
-    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
+    if(NOT ARG_NAME)
+        set(ARG_NAME coverage)
+    endif()
+
+    # Prefer the C++ compiler ID; fall back to C so C-only projects work too.
+    if(CMAKE_CXX_COMPILER_ID)
+        set(_compiler_id "${CMAKE_CXX_COMPILER_ID}")
+    else()
+        set(_compiler_id "${CMAKE_C_COMPILER_ID}")
+    endif()
+    if(NOT _compiler_id MATCHES "^(GNU|Clang|AppleClang)$")
         message(FATAL_ERROR
-            "add_coverage_report_target: unsupported compiler '${CMAKE_CXX_COMPILER_ID}' "
+            "add_coverage_report_target: unsupported compiler '${_compiler_id}' "
             "(supported: GNU, Clang, AppleClang)")
     endif()
 
@@ -50,24 +69,24 @@ function(add_coverage_report_target)
 
     find_program(GCOVR_EXE NAMES gcovr)
     if(NOT GCOVR_EXE)
-        message(WARNING "gcovr not found — 'coverage' target will not be available")
+        message(WARNING "gcovr not found — '${ARG_NAME}' target will not be available")
         return()
     endif()
 
     # Clang/AppleClang use llvm-cov as the gcov backend; GNU uses the system gcov.
     set(_gcov_executable_arg "")
-    if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
+    if(_compiler_id MATCHES "^(Clang|AppleClang)$")
         find_program(LLVM_COV_EXE NAMES llvm-cov-18 llvm-cov)
         if(NOT LLVM_COV_EXE)
-            message(WARNING "llvm-cov not found — 'coverage' target will not be available")
+            message(WARNING "llvm-cov not found — '${ARG_NAME}' target will not be available")
             return()
         endif()
         set(_gcov_executable_arg "--gcov-executable" "${LLVM_COV_EXE} gcov")
     endif()
 
-    set(COVERAGE_DIR "${CMAKE_BINARY_DIR}/coverage")
+    set(COVERAGE_DIR "${CMAKE_BINARY_DIR}/${ARG_NAME}")
 
-    add_custom_target(coverage
+    add_custom_target(${ARG_NAME}
         VERBATIM
         COMMENT "Running tests and generating coverage report"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_DIR}/html"

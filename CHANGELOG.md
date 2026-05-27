@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-05-27
+
+### Added
+- `coverage.cmake`: `add_coverage_report_target` accepts an optional `NAME`
+  argument (default `coverage`) that names the generated custom target and its
+  `build/<NAME>/html` report directory, so a project can create more than one
+  coverage report target. The previous hardcoded `coverage` target name is
+  preserved as the default.
+- C library support. The `integration/mylib` consumer is now configured twice —
+  once as a C++ project (`CONSUMER_LANG=CXX`) and once as a C project
+  (`CONSUMER_LANG=C`) — from a single shared library source, on both Clang
+  (`integration-c-*`) and GCC (`integration-gcc-c-*`). New cmake-only cases
+  (`coverage-c-fallback`, `sanitizers-c-gnu-address-undefined`,
+  `sanitizers-c-clang-address-undefined`) exercise the C compiler-id fallback.
+
+### Changed
+- `coverage.cmake` and `sanitizers.cmake`: the compiler-detection logic now
+  prefers `CMAKE_CXX_COMPILER_ID` and falls back to `CMAKE_C_COMPILER_ID`, so
+  C-only projects (`project(... LANGUAGES C)`) are supported. Previously the
+  empty C++ compiler id tripped the unsupported-compiler `FATAL_ERROR`.
+- `tests/integration/mylib`: the consumer's library source is now plain C
+  (`src/mylib.c`, `include/mylib/mylib.h`) shared between the C and C++ builds,
+  replacing the C++-only `mylib.cpp`/`mylib.hpp`.
+
 ## [2.3.0] - 2026-05-25
 
 ### Added
@@ -141,7 +165,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...v2.2.0
 [2.1.3]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.1...v2.1.2
