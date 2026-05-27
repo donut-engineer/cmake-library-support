@@ -4,9 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-github--pages-blue)](https://donut-engineer.github.io/cmake-library-support/)
 
-Authoring a redistributable C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as seven independently-includeable modules.
+Authoring a redistributable C or C++ library in CMake means stitching together coverage, versioning, install rules, packaging, and dependency fetching from scratch on every project. This repo packages that boilerplate as seven independently-includeable modules.
 
-Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C++ library author's build and release pipeline don't belong here.
+Every module in this repo serves that specific workflow — coverage reporting, version stamping, private dependency fetching, and install/package generation. Modules that don't serve a C or C++ library author's build and release pipeline don't belong here.
+
+All modules work for pure-C projects (`project(... LANGUAGES C)`) as well as C++. The `coverage` and `sanitizers` modules use the C++ compiler when it's enabled and fall back to the C compiler otherwise, so a C-only project is fully supported.
 
 ## Requirements
 

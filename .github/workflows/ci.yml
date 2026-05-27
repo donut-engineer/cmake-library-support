@@ -59,7 +59,7 @@ jobs:
       - name: Verify installed artifacts
         run: |
           test -f tests/build/mylib-install/lib/cmake/mylib/mylib-config.cmake
-          test -f tests/build/mylib-install/include/mylib/mylib.hpp
+          test -f tests/build/mylib-install/include/mylib/mylib.h
 
       - name: Upload Clang coverage report
         if: always()

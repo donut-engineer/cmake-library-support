@@ -57,21 +57,28 @@ function(target_enable_sanitizers)
     set(_compile_opts "")
     set(_link_opts "")
 
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Prefer the C++ compiler ID; fall back to C so C-only projects work too.
+    if(CMAKE_CXX_COMPILER_ID)
+        set(_compiler_id "${CMAKE_CXX_COMPILER_ID}")
+    else()
+        set(_compiler_id "${CMAKE_C_COMPILER_ID}")
+    endif()
+
+    if(_compiler_id STREQUAL "GNU")
         if("memory" IN_LIST _active)
             message(FATAL_ERROR "target_enable_sanitizers: MemorySanitizer is not supported by GCC; use Clang")
         endif()
         list(APPEND _compile_opts "-fsanitize=${_list}" "-fno-omit-frame-pointer")
         list(APPEND _link_opts    "-fsanitize=${_list}")
 
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND "memory" IN_LIST _active)
+    elseif(_compiler_id MATCHES "^(Clang|AppleClang)$")
+        if(_compiler_id STREQUAL "AppleClang" AND "memory" IN_LIST _active)
             message(FATAL_ERROR "target_enable_sanitizers: MemorySanitizer is not reliably supported on AppleClang/macOS; use upstream Clang on Linux")
         endif()
         list(APPEND _compile_opts "-fsanitize=${_list}" "-fno-omit-frame-pointer")
         list(APPEND _link_opts    "-fsanitize=${_list}")
 
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    elseif(_compiler_id STREQUAL "MSVC")
         foreach(_s undefined thread memory leak)
             if("${_s}" IN_LIST _active)
                 message(FATAL_ERROR "target_enable_sanitizers: '${_s}' sanitizer is not supported by MSVC; only ADDRESS is available")
@@ -81,7 +88,7 @@ function(target_enable_sanitizers)
         # MSVC auto-links the ASan runtime; no link options needed.
 
     else()
-        message(FATAL_ERROR "target_enable_sanitizers: unsupported compiler '${CMAKE_CXX_COMPILER_ID}' (expected GNU, Clang, AppleClang, or MSVC)")
+        message(FATAL_ERROR "target_enable_sanitizers: unsupported compiler '${_compiler_id}' (expected GNU, Clang, AppleClang, or MSVC)")
     endif()
 
     target_compile_options(${ARG_TARGET} ${_scope} ${_compile_opts})

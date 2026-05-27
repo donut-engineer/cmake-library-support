@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- C library support. The `integration/mylib` consumer is now configured twice —
+  once as a C++ project (`CONSUMER_LANG=CXX`) and once as a C project
+  (`CONSUMER_LANG=C`) — from a single shared library source, on both Clang
+  (`integration-c-*`) and GCC (`integration-gcc-c-*`). New cmake-only cases
+  (`coverage-c-fallback`, `sanitizers-c-gnu-address-undefined`,
+  `sanitizers-c-clang-address-undefined`) exercise the C compiler-id fallback.
+
+### Changed
+- `coverage.cmake` and `sanitizers.cmake`: the compiler-detection logic now
+  prefers `CMAKE_CXX_COMPILER_ID` and falls back to `CMAKE_C_COMPILER_ID`, so
+  C-only projects (`project(... LANGUAGES C)`) are supported. Previously the
+  empty C++ compiler id tripped the unsupported-compiler `FATAL_ERROR`.
+- `tests/integration/mylib`: the consumer's library source is now plain C
+  (`src/mylib.c`, `include/mylib/mylib.h`) shared between the C and C++ builds,
+  replacing the C++-only `mylib.cpp`/`mylib.hpp`.
+
 ## [2.3.0] - 2026-05-25
 
 ### Added
