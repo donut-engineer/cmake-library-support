@@ -43,6 +43,11 @@ endfunction()
 function(add_coverage_report_target)
     cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX;NAME" "" ${ARGN})
 
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR
+            "add_coverage_report_target: unrecognized arguments: ${ARG_UNPARSED_ARGUMENTS}")
+    endif()
+
     if(NOT ARG_TEST_TARGET)
         message(FATAL_ERROR "add_coverage_report_target: TEST_TARGET is required")
     endif()
