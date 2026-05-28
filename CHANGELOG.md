@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-05-28
+
+### Changed
+- `coverage.cmake`: the coverage target now runs ctest with `WORKING_DIRECTORY` set
+  to `CMAKE_CURRENT_BINARY_DIR` (the calling library's binary directory at configure
+  time) instead of `CMAKE_BINARY_DIR`. CTest reads `CTestTestfile.cmake` from its
+  working directory, so this automatically scopes test execution to the tests
+  registered under the calling library without requiring `--test-dir` or a CMake
+  version bump.
+
+### Fixed
+- `coverage.cmake`: `add_coverage_report_target` now emits `FATAL_ERROR` for
+  unrecognized keyword arguments. Previously `cmake_parse_arguments` silently
+  discarded unknown keywords, masking typos in call sites.
+
 ## [2.4.0] - 2026-05-27
 
 ### Added
@@ -165,7 +180,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.1.3...v2.2.0

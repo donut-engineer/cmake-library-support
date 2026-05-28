@@ -71,6 +71,21 @@ set_tests_properties(coverage-custom-target-name PROPERTIES
   TIMEOUT 30
   LABELS  cmake-only)
 
+# coverage: unknown keyword argument is rejected with a FATAL_ERROR.
+add_test(
+  NAME coverage-unknown-arg
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
+    -B "${CMAKE_BINARY_DIR}/coverage-unknown-arg-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DRUN_UNKNOWN_ARG=ON
+    -DCMAKE_CXX_COMPILER_ID=GNU
+)
+set_tests_properties(coverage-unknown-arg PROPERTIES
+  TIMEOUT   30
+  LABELS    cmake-only
+  WILL_FAIL TRUE)
+
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 

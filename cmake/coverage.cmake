@@ -40,8 +40,18 @@ endfunction()
 #   EXCLUDE_REGEX  — regex passed to gcovr --exclude (matched against full file paths).
 #                    Defaults to excluding googletest, googlemock, /usr/, and any path
 #                    containing a directory named "test".
+#
+# Note: the generated target runs ctest with WORKING_DIRECTORY set to
+# CMAKE_CURRENT_BINARY_DIR (the calling library's binary dir at configure time).
+# CTest reads CTestTestfile.cmake from that directory, scoping test execution to
+# the tests registered in that subdirectory only.
 function(add_coverage_report_target)
     cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX;NAME" "" ${ARGN})
+
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR
+            "add_coverage_report_target: unrecognized arguments: ${ARG_UNPARSED_ARGUMENTS}")
+    endif()
 
     if(NOT ARG_TEST_TARGET)
         message(FATAL_ERROR "add_coverage_report_target: TEST_TARGET is required")
@@ -106,7 +116,7 @@ function(add_coverage_report_target)
             "${CMAKE_BINARY_DIR}"
         COMMAND ${CMAKE_COMMAND} -E echo
             "Coverage report: ${COVERAGE_DIR}/html/index.html"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS ${ARG_TEST_TARGET}
     )
 endfunction()
