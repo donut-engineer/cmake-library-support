@@ -40,8 +40,20 @@ endfunction()
 #   EXCLUDE_REGEX  — regex passed to gcovr --exclude (matched against full file paths).
 #                    Defaults to excluding googletest, googlemock, /usr/, and any path
 #                    containing a directory named "test".
+#   SOURCE_DIR     — root of the library's source tree. When provided, gcovr only
+#                    reports coverage for files under this path (--filter). Must be an
+#                    absolute path. Omit to report all instrumented sources found in
+#                    CMAKE_BINARY_DIR (backward-compatible default). In a multi-library
+#                    repo, pass the library's source root here (e.g.
+#                    "${CMAKE_CURRENT_SOURCE_DIR}/..") to prevent other libraries'
+#                    source files from appearing in this report.
+#
+# Note: the generated target runs ctest with WORKING_DIRECTORY set to
+# CMAKE_CURRENT_BINARY_DIR (the calling library's binary dir at configure time).
+# CTest reads CTestTestfile.cmake from that directory, scoping test execution to
+# the tests registered in that subdirectory only.
 function(add_coverage_report_target)
-    cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX;NAME" "" ${ARGN})
+    cmake_parse_arguments(ARG "" "TEST_TARGET;EXCLUDE_REGEX;NAME;SOURCE_DIR" "" ${ARGN})
 
     if(ARG_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR
@@ -91,6 +103,11 @@ function(add_coverage_report_target)
 
     set(COVERAGE_DIR "${CMAKE_BINARY_DIR}/${ARG_NAME}")
 
+    set(_gcovr_filter_args "")
+    if(ARG_SOURCE_DIR)
+        set(_gcovr_filter_args "--filter" "${ARG_SOURCE_DIR}")
+    endif()
+
     add_custom_target(${ARG_NAME}
         VERBATIM
         COMMENT "Running tests and generating coverage report"
@@ -101,9 +118,11 @@ function(add_coverage_report_target)
         # gcovr --exclude accepts the same alternation regex as EXCLUDE_REGEX.
         # _gcov_executable_arg is empty for GNU (uses system gcov) or
         # "--gcov-executable <llvm-cov> gcov" for Clang/AppleClang.
+        # _gcovr_filter_args is empty or "--filter" "<SOURCE_DIR>" when set.
         COMMAND ${GCOVR_EXE}
             ${_gcov_executable_arg}
             "--root" "${CMAKE_SOURCE_DIR}"
+            ${_gcovr_filter_args}
             "--exclude" "${ARG_EXCLUDE_REGEX}"
             "--html-details" "${COVERAGE_DIR}/html/index.html"
             "--print-summary"
@@ -111,7 +130,7 @@ function(add_coverage_report_target)
             "${CMAKE_BINARY_DIR}"
         COMMAND ${CMAKE_COMMAND} -E echo
             "Coverage report: ${COVERAGE_DIR}/html/index.html"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         DEPENDS ${ARG_TEST_TARGET}
     )
 endfunction()
