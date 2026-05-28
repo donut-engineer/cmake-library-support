@@ -39,3 +39,42 @@ if(RUN_NAMED_REPORT_TARGET)
         message(FATAL_ERROR "default-named 'coverage' target should not exist when NAME is set")
     endif()
 endif()
+
+# ---------------------------------------------------------------------------
+# Verifies that unknown keyword arguments are rejected with a FATAL_ERROR.
+# ---------------------------------------------------------------------------
+if(RUN_UNKNOWN_ARG)
+    add_custom_target(dummy)
+    set(GCOVR_EXE "/usr/bin/true" CACHE FILEPATH "" FORCE)
+    add_coverage_report_target(TEST_TARGET dummy BOGUS_ARG value)
+endif()
+
+# ---------------------------------------------------------------------------
+# Verifies the optional SOURCE_DIR argument: the custom target is created and
+# the argument is accepted without error. Pre-seeding GCOVR_EXE skips the
+# find_program() lookup so no real gcovr install is required.
+# ---------------------------------------------------------------------------
+if(RUN_SOURCE_DIR_REPORT_TARGET)
+    add_custom_target(dummy)
+    set(GCOVR_EXE "/usr/bin/true" CACHE FILEPATH "" FORCE)
+    add_coverage_report_target(
+        TEST_TARGET dummy
+        NAME        coverage-srcdir
+        SOURCE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    if(NOT TARGET coverage-srcdir)
+        message(FATAL_ERROR "expected 'coverage-srcdir' target to be created")
+    endif()
+endif()
+
+# ---------------------------------------------------------------------------
+# Backward-compat: omitting SOURCE_DIR still creates the target.
+# ---------------------------------------------------------------------------
+if(RUN_NO_SOURCE_DIR)
+    add_custom_target(dummy)
+    set(GCOVR_EXE "/usr/bin/true" CACHE FILEPATH "" FORCE)
+    add_coverage_report_target(TEST_TARGET dummy NAME coverage-no-srcdir)
+    if(NOT TARGET coverage-no-srcdir)
+        message(FATAL_ERROR "expected 'coverage-no-srcdir' target to be created")
+    endif()
+endif()
