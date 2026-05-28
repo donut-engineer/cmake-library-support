@@ -9,15 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.0] - 2026-05-28
 
-### Added
-- `coverage.cmake`: `add_coverage_report_target` accepts an optional `SOURCE_DIR`
-  argument. When provided, it is passed to gcovr as `--filter`, restricting coverage
-  collection to files under that source tree only. Omitting it preserves the previous
-  behaviour of scanning all instrumented sources in `CMAKE_BINARY_DIR`. In a
-  multi-library repo, pass the library's source root (e.g.
-  `"${CMAKE_CURRENT_SOURCE_DIR}/.."`) to prevent other libraries' source files from
-  appearing in the report.
-
 ### Changed
 - `coverage.cmake`: the coverage target now runs ctest with `WORKING_DIRECTORY` set
   to `CMAKE_CURRENT_BINARY_DIR` (the calling library's binary directory at configure

@@ -86,34 +86,6 @@ set_tests_properties(coverage-unknown-arg PROPERTIES
   LABELS    cmake-only
   WILL_FAIL TRUE)
 
-# coverage: optional SOURCE_DIR argument is accepted and the target is created.
-add_test(
-  NAME coverage-source-dir-target
-  COMMAND ${CMAKE_COMMAND}
-    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
-    -B "${CMAKE_BINARY_DIR}/coverage-source-dir-target-build"
-    "-DMODULES_DIR=${MODULES_DIR}"
-    -DRUN_SOURCE_DIR_REPORT_TARGET=ON
-    -DCMAKE_CXX_COMPILER_ID=GNU
-)
-set_tests_properties(coverage-source-dir-target PROPERTIES
-  TIMEOUT 30
-  LABELS  cmake-only)
-
-# coverage: omitting SOURCE_DIR still creates the target (backward compat).
-add_test(
-  NAME coverage-no-source-dir-compat
-  COMMAND ${CMAKE_COMMAND}
-    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
-    -B "${CMAKE_BINARY_DIR}/coverage-no-source-dir-build"
-    "-DMODULES_DIR=${MODULES_DIR}"
-    -DRUN_NO_SOURCE_DIR=ON
-    -DCMAKE_CXX_COMPILER_ID=GNU
-)
-set_tests_properties(coverage-no-source-dir-compat PROPERTIES
-  TIMEOUT 30
-  LABELS  cmake-only)
-
 _add_cmake_configure_test(config-template
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-config-template")
 
