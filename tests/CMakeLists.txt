@@ -71,6 +71,20 @@ set_tests_properties(coverage-custom-target-name PROPERTIES
   TIMEOUT 30
   LABELS  cmake-only)
 
+# coverage: SEARCH_DIR argument is accepted and target is created.
+add_test(
+  NAME coverage-custom-search-dir
+  COMMAND ${CMAKE_COMMAND}
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/cmake-only/test-coverage"
+    -B "${CMAKE_BINARY_DIR}/coverage-custom-search-dir-build"
+    "-DMODULES_DIR=${MODULES_DIR}"
+    -DRUN_SEARCH_DIR=ON
+    -DCMAKE_CXX_COMPILER_ID=GNU
+)
+set_tests_properties(coverage-custom-search-dir PROPERTIES
+  TIMEOUT 30
+  LABELS  cmake-only)
+
 # coverage: unknown keyword argument is rejected with a FATAL_ERROR.
 add_test(
   NAME coverage-unknown-arg
