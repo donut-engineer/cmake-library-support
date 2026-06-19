@@ -41,6 +41,20 @@ if(RUN_NAMED_REPORT_TARGET)
 endif()
 
 # ---------------------------------------------------------------------------
+# Verifies that SEARCH_DIR is accepted and the target is created with a
+# custom search directory. Before implementation this FATAL_ERRORs as an
+# unknown argument.
+# ---------------------------------------------------------------------------
+if(RUN_SEARCH_DIR)
+    add_custom_target(dummy)
+    set(GCOVR_EXE "/usr/bin/true" CACHE FILEPATH "" FORCE)
+    add_coverage_report_target(TEST_TARGET dummy SEARCH_DIR "/some/custom/dir")
+    if(NOT TARGET coverage)
+        message(FATAL_ERROR "expected 'coverage' target to be created")
+    endif()
+endif()
+
+# ---------------------------------------------------------------------------
 # Verifies that unknown keyword arguments are rejected with a FATAL_ERROR.
 # ---------------------------------------------------------------------------
 if(RUN_UNKNOWN_ARG)

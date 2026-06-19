@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-06-18
+
+### Added
+- `coverage.cmake`: `add_coverage_report_target` accepts an optional `SEARCH_DIR`
+  argument that sets the path gcovr searches for `.gcda` files. Defaults to
+  `CMAKE_BINARY_DIR` for backwards compatibility. Set to a library's own binary
+  directory when multiple libraries share a build tree to avoid cross-contamination
+  of coverage data.
+
 ## [2.5.0] - 2026-05-28
 
 ### Changed
@@ -180,7 +189,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `package-rules.cmake` — Configures CPack for TGZ/ZIP archive generation with system
   name and architecture in the filename.
 
-[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/donut-engineer/cmake-library-support/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/donut-engineer/cmake-library-support/compare/v2.2.0...v2.3.0

@@ -58,6 +58,15 @@ add_coverage_report_target(
 )
 ```
 
+Pass `SEARCH_DIR` to tell gcovr where to look for `.gcda` files. It defaults to `CMAKE_BINARY_DIR`, which is correct for a single-library project. When multiple libraries share a build tree, set it to the library's own binary directory to avoid mixing coverage data:
+
+```cmake
+add_coverage_report_target(
+    TEST_TARGET myTests
+    SEARCH_DIR  "${CMAKE_CURRENT_BINARY_DIR}"
+)
+```
+
 The target is named `coverage` by default. Pass `NAME` to choose a different name, which is useful when a project needs more than one report target (one `add_coverage_report_target` call per name):
 
 ```cmake
