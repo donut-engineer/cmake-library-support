@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `coverage.cmake`: `add_coverage_report_target` accepts an optional `SEARCH_DIR`
+  argument that sets the path gcovr searches for `.gcda` files. Defaults to
+  `CMAKE_BINARY_DIR` for backwards compatibility. Set to a library's own binary
+  directory when multiple libraries share a build tree to avoid cross-contamination
+  of coverage data.
+
 ## [2.5.0] - 2026-05-28
 
 ### Changed
